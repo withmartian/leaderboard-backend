@@ -2,6 +2,7 @@ from .base_provider import AbstractProvider
 from typing import Callable
 import requests
 import time
+import openai
 
 
 class OpenaiProvider(AbstractProvider):
@@ -15,6 +16,13 @@ class OpenaiProvider(AbstractProvider):
     CLIENT = None
     SUPPORTED_MODELS = None
 
+    def __init__(self):
+        if self.API_KEY and self.OPENAI_BASE_URL:
+            self.CLIENT = openai.OpenAI(
+                api_key=self.API_KEY,
+                base_url=self.OPENAI_BASE_URL,
+            )
+
     def default_get_completion_tokens(response: dict):
         return response["usage"]["completion_tokens"]
 
@@ -23,9 +31,10 @@ class OpenaiProvider(AbstractProvider):
         model_name: str,
         prompt: str,
         max_tokens: int,
-        url: str = HTTP_URL,
+        url: str = None,
         get_completion_tokens: Callable = default_get_completion_tokens,
     ) -> int:
+        url = url or self.HTTP_URL
         data = {
             "model": self.SUPPORTED_MODELS[model_name],
             "messages": [{"role": "user", "content": prompt}],

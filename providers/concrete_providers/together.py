@@ -1,5 +1,4 @@
 from providers.abstract_providers.openai_provider import OpenaiProvider
-import openai
 import os
 from typing import Callable
 from dotenv import load_dotenv
@@ -12,10 +11,6 @@ class Together(OpenaiProvider):
     API_KEY = os.environ["TOGETHER_API_KEY"]
     HTTP_URL = "https://api.together.xyz/inference"
     OPENAI_BASE_URL = "https://api.together.xyz/v1"
-    CLIENT = openai.OpenAI(
-        api_key=API_KEY,
-        base_url=OPENAI_BASE_URL,
-    )
     SUPPORTED_MODELS = {
         "mixtral-8x7b": "DiscoResearch/DiscoLM-mixtral-8x7b-v2",
         "llama-2-70b-chat": "togethercomputer/llama-2-70b-chat",
