@@ -2,14 +2,14 @@ import replicate
 import os
 import requests
 import time
-from providers.abstract_providers.base_provider import AbstractProvider
+from providers.abstract_providers.base_provider import BaseProvider
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-class Replicate(AbstractProvider):
+class Replicate(BaseProvider):
     NAME = "replicate"
     API_KEY = os.environ["REPLICATE_API_KEY"]
     MODEL_TO_URL = {
@@ -21,13 +21,14 @@ class Replicate(AbstractProvider):
         "mixtral-8x7b": "mistralai/mixtral-8x7b-instruct-v0.1",
     }
 
-    def call_http(self, model_name: str, prompt: str, max_tokens: int) -> int:
+    def call_http(self, model_name: str, prompt: str, max_tokens: int) -> float:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Token {self.API_KEY}",
         }
 
         # Start the prediction
+        start = time.time()
         response = requests.post(
             self.MODEL_TO_URL[model_name],
             json={"input": {"prompt": prompt, "max_new_tokens": max_tokens}},
@@ -53,9 +54,11 @@ class Replicate(AbstractProvider):
 
             prediction_data = prediction_response.json()
             if prediction_data["status"] == "succeeded":
-                return prediction_data["metrics"]["output_token_count"]
+                latency = time.time() - start
+                return prediction_data["metrics"]["output_token_count"] / latency
 
-    def call_sdk(self, model_name: str, prompt: str, max_tokens: int) -> int:
+    def call_sdk(self, model_name: str, prompt: str, max_tokens: int) -> float:
+        start = time.time()
         output = replicate.run(
             self.SUPPORTED_MODELS[model_name],
             input={
@@ -63,7 +66,8 @@ class Replicate(AbstractProvider):
                 "max_new_tokens": max_tokens,
             },
         )
-        return len(list(output))
+        latency = time.time() - start
+        return len(list(output)) / latency
 
     def get_ttft(self, model_name: str, prompt: str, max_tokens: int = 5) -> float:
         start = time.time()

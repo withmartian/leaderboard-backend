@@ -24,7 +24,7 @@ class Lepton(OpenaiProvider):
         model_name: str,
         prompt: str,
         max_tokens: int,
-    ) -> int:
+    ) -> float:
         return super().call_http(
             model_name, prompt, max_tokens, self.MODEL_TO_HTTP_URL[model_name]
         )
@@ -34,7 +34,7 @@ class Lepton(OpenaiProvider):
         model_name: str,
         prompt: str,
         max_tokens: int,
-    ) -> int:
+    ) -> float:
         client = openai.OpenAI(
             base_url=self.MODEL_TO_OPENAI_BASE_URL[model_name], api_key=self.API_KEY
         )

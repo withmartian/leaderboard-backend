@@ -26,7 +26,7 @@ class Together(OpenaiProvider):
         max_tokens: int,
         url: str = HTTP_URL,
         get_completion_tokens: Callable = together_get_completion_tokens,
-    ) -> int:
+    ) -> float:
         return super().call_http(
             model_name,
             prompt,
