@@ -2,6 +2,8 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from provider_factory import ProviderFactory
 from prompts import get_prompt
+from models.throughput import Throughputs, save_throughputs
+import time
 
 
 def get_throughputs(
@@ -18,6 +20,7 @@ def get_throughputs(
     provider = ProviderFactory.get_provider(provider_name)
     prompt = get_prompt(input_tokens)
     throughputs = []
+    start_time = time.time()
     with ThreadPoolExecutor(max_workers=num_concurrent_requests) as executor:
         futures = [
             executor.submit(
@@ -31,5 +34,14 @@ def get_throughputs(
         for future in concurrent.futures.as_completed(futures):
             throughputs.append(future.result())
 
-    # save to database
+    throughputs = Throughputs(
+        start_time=start_time,
+        concurrent_requests=num_concurrent_requests,
+        model_name=model_name,
+        request_method=request_method,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        tokens_per_second=throughputs,
+    )
+    save_throughputs(throughputs)
     return throughputs
