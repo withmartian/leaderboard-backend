@@ -21,27 +21,27 @@ class Lepton(OpenaiProvider):
 
     def call_http(
         self,
-        model_name: str,
+        llm_name: str,
         prompt: str,
         max_tokens: int,
     ) -> float:
         return super().call_http(
-            model_name, prompt, max_tokens, self.MODEL_TO_HTTP_URL[model_name]
+            llm_name, prompt, max_tokens, self.MODEL_TO_HTTP_URL[llm_name]
         )
 
     def call_sdk(
         self,
-        model_name: str,
+        llm_name: str,
         prompt: str,
         max_tokens: int,
     ) -> float:
         client = openai.OpenAI(
-            base_url=self.MODEL_TO_OPENAI_BASE_URL[model_name], api_key=self.API_KEY
+            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
         )
-        return super().call_sdk(model_name, prompt, max_tokens, client)
+        return super().call_sdk(llm_name, prompt, max_tokens, client)
 
-    def get_ttft(self, model_name: str, prompt: str, max_tokens: int = 5) -> float:
+    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int = 5) -> float:
         client = openai.OpenAI(
-            base_url=self.MODEL_TO_OPENAI_BASE_URL[model_name], api_key=self.API_KEY
+            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
         )
-        return super().get_ttft(model_name, prompt, max_tokens, client)
+        return super().get_ttft(llm_name, prompt, max_tokens, client)

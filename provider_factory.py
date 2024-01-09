@@ -1,5 +1,4 @@
 import inspect
-import os
 import sys
 
 from providers.abstract_providers import BaseProvider

@@ -21,14 +21,14 @@ class Together(OpenaiProvider):
 
     def call_http(
         self,
-        model_name: str,
+        llm_name: str,
         prompt: str,
         max_tokens: int,
         url: str = HTTP_URL,
         get_completion_tokens: Callable = together_get_completion_tokens,
     ) -> float:
         return super().call_http(
-            model_name,
+            llm_name,
             prompt,
             max_tokens,
             url=url,

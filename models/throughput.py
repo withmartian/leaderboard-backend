@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import List
 from enum import Enum
 
 from pydantic import BaseModel
 
 from databases.mongo import DatabaseClient
-from models.base import MongoBaseModel, PyObjectId
 
 
 class RequestMethod(str, Enum):
@@ -15,6 +14,7 @@ class RequestMethod(str, Enum):
 
 class ModelName(str, Enum):
     LLAMA2_70B_CHAT = "llama2-70b"
+    MIXTRAL_8X7B = "mixtral-8x7b"
 
 
 class TokenCounts(int, Enum):
@@ -25,7 +25,7 @@ class TokenCounts(int, Enum):
 class Throughputs(BaseModel):
     start_time: datetime
     provider_name: str
-    model_name: str
+    llm_name: ModelName
     concurrent_requests: int
     request_method: RequestMethod
     input_tokens: TokenCounts
@@ -36,20 +36,20 @@ class Throughputs(BaseModel):
 class TTFT(BaseModel):
     start_time: datetime
     provider_name: str
-    model_name: str
+    llm_name: ModelName
     concurrent_requests: int
     input_tokens: TokenCounts
     ttft: List[float]
 
 
-def save_throughputs(throughputs: Throughputs) -> None:
-    throughputs_collection = DatabaseClient.get_collection("throughputs")
-    throughputs_collection.insert_one(throughputs.model_dump(by_alias=True))
+async def save_throughputs(throughputs: Throughputs) -> None:
+    throughputs_collection = DatabaseClient.get_collection("throughput")
+    await throughputs_collection.insert_one(throughputs.model_dump(by_alias=True))
 
 
-def save_ttft(ttfts: TTFT) -> None:
+async def save_ttft(ttfts: TTFT) -> None:
     ttft_collection = DatabaseClient.get_collection("ttft")
-    ttft_collection.insert_one(ttfts.model_dump(by_alias=True))
+    await ttft_collection.insert_one(ttfts.model_dump(by_alias=True))
 
 
 # async def add_transaction(txn: Transaction, org: Optional[Organization] = None) -> None:

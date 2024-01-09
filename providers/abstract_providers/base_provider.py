@@ -8,7 +8,7 @@ class BaseProvider(ABC):
     @abstractmethod
     def call_http(
         self,
-        model_name: str,
+        llm_name: str,
         prompt: str,
         max_tokens: int,
         url: str = None,
@@ -20,7 +20,7 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
-    def call_sdk(self, model_name: str, prompt: str, max_tokens: int) -> int:
+    def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> int:
         """
         Calls the provider endpoint through openai client python package if available, else the provider's own python SDK.
         Return the tokens/s of the call
@@ -28,7 +28,7 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
-    def get_ttft(self, model_name: str, prompt: str, max_tokens: int) -> float:
+    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int) -> float:
         """
         Returns the time to first token (TTFT) in seconds via the openai client python package using streaming.
         If the provider doesn't support the openai client python package, use its SDK.

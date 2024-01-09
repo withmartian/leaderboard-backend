@@ -29,7 +29,7 @@ class OpenaiProvider(BaseProvider):
 
     def call_http(
         self,
-        model_name: str,
+        llm_name: str,
         prompt: str,
         max_tokens: int,
         url: str = None,
@@ -37,7 +37,7 @@ class OpenaiProvider(BaseProvider):
     ) -> float:
         url = url or self.HTTP_URL
         data = {
-            "model": self.SUPPORTED_MODELS[model_name],
+            "model": self.SUPPORTED_MODELS[llm_name],
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
         }
@@ -52,12 +52,12 @@ class OpenaiProvider(BaseProvider):
         return get_completion_tokens(response) / latency
 
     def call_sdk(
-        self, model_name: str, prompt: str, max_tokens: int, client=None
+        self, llm_name: str, prompt: str, max_tokens: int, client=None
     ) -> float:
         client = client or self.CLIENT
         start = time.time()
         response = client.chat.completions.create(
-            model=self.SUPPORTED_MODELS[model_name],
+            model=self.SUPPORTED_MODELS[llm_name],
             messages=[
                 {
                     "role": "user",
@@ -72,12 +72,12 @@ class OpenaiProvider(BaseProvider):
         return response.usage.completion_tokens / latency
 
     def get_ttft(
-        self, model_name: str, prompt: str, max_tokens: int = 5, client=None
+        self, llm_name: str, prompt: str, max_tokens: int = 5, client=None
     ) -> float:
         client = client or self.CLIENT
         start = time.time()
         stream = client.chat.completions.create(
-            model=self.SUPPORTED_MODELS[model_name],
+            model=self.SUPPORTED_MODELS[llm_name],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
             max_tokens=max_tokens,

@@ -21,7 +21,7 @@ class Replicate(BaseProvider):
         "mixtral-8x7b": "mistralai/mixtral-8x7b-instruct-v0.1",
     }
 
-    def call_http(self, model_name: str, prompt: str, max_tokens: int) -> float:
+    def call_http(self, llm_name: str, prompt: str, max_tokens: int) -> float:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Token {self.API_KEY}",
@@ -30,7 +30,7 @@ class Replicate(BaseProvider):
         # Start the prediction
         start = time.time()
         response = requests.post(
-            self.MODEL_TO_URL[model_name],
+            self.MODEL_TO_URL[llm_name],
             json={"input": {"prompt": prompt, "max_new_tokens": max_tokens}},
             headers=headers,
         )
@@ -57,10 +57,10 @@ class Replicate(BaseProvider):
                 latency = time.time() - start
                 return prediction_data["metrics"]["output_token_count"] / latency
 
-    def call_sdk(self, model_name: str, prompt: str, max_tokens: int) -> float:
+    def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> float:
         start = time.time()
         output = replicate.run(
-            self.SUPPORTED_MODELS[model_name],
+            self.SUPPORTED_MODELS[llm_name],
             input={
                 "prompt": prompt,
                 "max_new_tokens": max_tokens,
@@ -69,10 +69,10 @@ class Replicate(BaseProvider):
         latency = time.time() - start
         return len(list(output)) / latency
 
-    def get_ttft(self, model_name: str, prompt: str, max_tokens: int = 5) -> float:
+    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int = 5) -> float:
         start = time.time()
         for event in replicate.stream(
-            self.SUPPORTED_MODELS[model_name],
+            self.SUPPORTED_MODELS[llm_name],
             input={"prompt": prompt, "max_new_tokens": max_tokens},
         ):
             if event and event.data:
