@@ -9,7 +9,7 @@ from motor.motor_asyncio import (
 from pymongo.server_api import ServerApi
 
 DATABASE_NAME = "provider-leaderboard"
-COLLECTIONS = {"throughputs"}
+COLLECTIONS = {"throughputs", "ttft"}
 
 load_dotenv()
 

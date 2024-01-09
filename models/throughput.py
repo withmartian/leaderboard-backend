@@ -24,17 +24,32 @@ class TokenCounts(int, Enum):
 
 class Throughputs(BaseModel):
     start_time: datetime
-    concurrent_requests: int
+    provider_name: str
     model_name: str
+    concurrent_requests: int
     request_method: RequestMethod
     input_tokens: TokenCounts
     output_tokens: TokenCounts
     tokens_per_second: List[float]
 
 
+class TTFT(BaseModel):
+    start_time: datetime
+    provider_name: str
+    model_name: str
+    concurrent_requests: int
+    input_tokens: TokenCounts
+    ttft: List[float]
+
+
 def save_throughputs(throughputs: Throughputs) -> None:
     throughputs_collection = DatabaseClient.get_collection("throughputs")
     throughputs_collection.insert_one(throughputs.model_dump(by_alias=True))
+
+
+def save_ttft(ttfts: TTFT) -> None:
+    ttft_collection = DatabaseClient.get_collection("ttft")
+    ttft_collection.insert_one(ttfts.model_dump(by_alias=True))
 
 
 # async def add_transaction(txn: Transaction, org: Optional[Organization] = None) -> None:
