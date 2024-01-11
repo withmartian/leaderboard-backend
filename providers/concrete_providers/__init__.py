@@ -6,3 +6,5 @@ from .fireworks import Fireworks
 from .perplexity import Perplexity
 from .deepinfra import Deepinfra
 from .decart import Decart
+from .openai import Openai
+from .anthropic import AnthropicProvider

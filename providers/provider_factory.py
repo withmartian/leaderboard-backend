@@ -21,6 +21,5 @@ class ProviderFactory:
         return ProviderFactory._model_registry[provider_name]()
 
     @staticmethod
-    def get_all_providers() -> list[BaseProvider]:
-        for provider in ProviderFactory._model_registry.keys():
-            yield ProviderFactory.get_provider(provider)
+    def get_all_provider_names() -> list[BaseProvider]:
+        return ProviderFactory._model_registry.keys()

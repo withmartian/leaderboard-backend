@@ -12,7 +12,7 @@ class Together(OpenaiProvider):
     HTTP_URL = "https://api.together.xyz/inference"
     OPENAI_BASE_URL = "https://api.together.xyz/v1"
     SUPPORTED_MODELS = {
-        "mixtral-8x7b": "DiscoResearch/DiscoLM-mixtral-8x7b-v2",
+        "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
         "llama-2-70b-chat": "togethercomputer/llama-2-70b-chat",
     }
 

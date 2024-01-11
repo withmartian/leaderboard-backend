@@ -67,12 +67,10 @@ class OpenaiProvider(BaseProvider):
             max_tokens=max_tokens,
         )
         latency = time.time() - start
-        if not response.choices[0].message.content:
-            raise Exception("Response is none or empty")
         return response.usage.completion_tokens / latency
 
     def get_ttft(
-        self, llm_name: str, prompt: str, max_tokens: int = 5, client=None
+        self, llm_name: str, prompt: str, max_tokens: int = 1, client=None
     ) -> float:
         client = client or self.CLIENT
         start = time.time()
