@@ -3,7 +3,7 @@ import os
 import requests
 import time
 from providers.abstract_providers.base_provider import BaseProvider
-
+import asyncio
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,6 +33,7 @@ class Replicate(BaseProvider):
             self.MODEL_TO_URL[llm_name],
             json={"input": {"prompt": prompt, "max_new_tokens": max_tokens}},
             headers=headers,
+            timeout=60,
         )
 
         if response.status_code != 201:
@@ -57,9 +58,9 @@ class Replicate(BaseProvider):
                 latency = time.time() - start
                 return prediction_data["metrics"]["output_token_count"] / latency
 
-    def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> float:
+    async def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> float:
         start = time.time()
-        output = replicate.run(
+        output = await replicate.async_run(
             self.SUPPORTED_MODELS[llm_name],
             input={
                 "prompt": prompt,
@@ -69,11 +70,18 @@ class Replicate(BaseProvider):
         latency = time.time() - start
         return len(list(output)) / latency
 
-    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int = 5) -> float:
+    async def call_streaming(
+        self, llm_name: str, prompt: str, max_tokens: int = 5
+    ) -> float:
         start = time.time()
-        for event in replicate.stream(
-            self.SUPPORTED_MODELS[llm_name],
-            input={"prompt": prompt, "max_new_tokens": max_tokens},
-        ):
-            if event and event.data:
-                return time.time() - start
+
+        def sync_call_streaming():
+            stream = replicate.stream(
+                self.SUPPORTED_MODELS[llm_name],
+                input={"prompt": prompt, "max_new_tokens": max_tokens},
+            )
+            for event in stream:
+                if event and event.data:
+                    return time.time() - start
+
+        return await asyncio.to_thread(sync_call_streaming)

@@ -18,7 +18,7 @@ class OpenaiProvider(BaseProvider):
 
     def __init__(self):
         if self.API_KEY and self.OPENAI_BASE_URL:
-            self.CLIENT = openai.OpenAI(
+            self.CLIENT = openai.AsyncOpenAI(
                 api_key=self.API_KEY,
                 base_url=self.OPENAI_BASE_URL,
             )
@@ -45,18 +45,21 @@ class OpenaiProvider(BaseProvider):
             "Authorization": f"Bearer {self.API_KEY}",
             "Content-Type": "application/json",
         }
-        start = time.time()
-        response = requests.post(url, headers=headers, json=data)
-        latency = time.time() - start
-        response = response.json()
-        return get_completion_tokens(response) / latency
+        try:
+            start = time.time()
+            response = requests.post(url, headers=headers, json=data, timeout=60)
+            latency = time.time() - start
+            response = response.json()
+            return get_completion_tokens(response) / latency
+        except Exception as e:
+            print(e)
 
-    def call_sdk(
+    async def call_sdk(
         self, llm_name: str, prompt: str, max_tokens: int, client=None
     ) -> float:
         client = client or self.CLIENT
         start = time.time()
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model=self.SUPPORTED_MODELS[llm_name],
             messages=[
                 {
@@ -65,21 +68,23 @@ class OpenaiProvider(BaseProvider):
                 }
             ],
             max_tokens=max_tokens,
+            timeout=60,
         )
         latency = time.time() - start
         return response.usage.completion_tokens / latency
 
-    def get_ttft(
-        self, llm_name: str, prompt: str, max_tokens: int = 1, client=None
+    async def call_streaming(
+        self, llm_name: str, prompt: str, max_tokens: int, client=None
     ) -> float:
         client = client or self.CLIENT
         start = time.time()
-        stream = client.chat.completions.create(
+        stream = await client.chat.completions.create(
             model=self.SUPPORTED_MODELS[llm_name],
             messages=[{"role": "user", "content": prompt}],
             stream=True,
             max_tokens=max_tokens,
+            timeout=60,
         )
-        for chunk in stream:
+        async for chunk in stream:
             if chunk.choices[0].delta.content is not None:
                 return time.time() - start

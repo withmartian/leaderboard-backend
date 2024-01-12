@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-from utils.types import ModelName, RequestMethod, TokenCounts
+from utils.types import ModelName, TokenCounts
 
 from pydantic import BaseModel
 
@@ -12,8 +12,6 @@ class Throughputs(BaseModel):
     provider_name: str
     llm_name: ModelName
     concurrent_requests: int
-    request_method: RequestMethod
-    input_tokens: TokenCounts
     output_tokens: TokenCounts
     tokens_per_second: List[float]
 

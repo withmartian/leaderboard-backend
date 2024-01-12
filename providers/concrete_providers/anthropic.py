@@ -17,7 +17,7 @@ class AnthropicProvider(BaseProvider):
         "claude-instant-1.2": "claude-instant-1.2",
     }
     HTTP_URL = "https://api.anthropic.com/v1/complete"
-    CLIENT = anthropic.Anthropic(api_key=API_KEY)
+    CLIENT = anthropic.AsyncAnthropic(api_key=API_KEY)
 
     def call_http(
         self,
@@ -37,29 +37,33 @@ class AnthropicProvider(BaseProvider):
             "content-type": "application/json",
         }
         start = time.time()
-        response = requests.post(self.HTTP_URL, headers=headers, json=data)
+        response = requests.post(self.HTTP_URL, headers=headers, json=data, timeout=60)
         latency = time.time() - start
         response = response.json()
         return self.CLIENT.count_tokens(response["completion"]) / latency
 
-    def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> int:
+    async def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> int:
         start = time.time()
-        response = self.CLIENT.completions.create(
+        response = await self.CLIENT.completions.create(
             model=self.SUPPORTED_MODELS[llm_name],
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+            timeout=60,
         )
         latency = time.time() - start
-        return self.CLIENT.count_tokens(response.completion) / latency
+        return await self.CLIENT.count_tokens(response.completion) / latency
 
-    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int) -> float:
+    async def call_streaming(
+        self, llm_name: str, prompt: str, max_tokens: int
+    ) -> float:
         start = time.time()
-        stream = self.CLIENT.completions.create(
+        stream = await self.CLIENT.completions.create(
             model=self.SUPPORTED_MODELS[llm_name],
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
             stream=True,
+            timeout=60,
         )
-        for chunk in stream:
+        async for chunk in stream:
             if chunk.completion is not None:
                 return time.time() - start

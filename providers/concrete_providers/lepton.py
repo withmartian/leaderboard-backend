@@ -29,19 +29,21 @@ class Lepton(OpenaiProvider):
             llm_name, prompt, max_tokens, self.MODEL_TO_HTTP_URL[llm_name]
         )
 
-    def call_sdk(
+    async def call_sdk(
         self,
         llm_name: str,
         prompt: str,
         max_tokens: int,
     ) -> float:
-        client = openai.OpenAI(
+        client = openai.AsyncOpenAI(
             base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
         )
-        return super().call_sdk(llm_name, prompt, max_tokens, client)
+        return await super().call_sdk(llm_name, prompt, max_tokens, client)
 
-    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int = 5) -> float:
-        client = openai.OpenAI(
+    async def call_streaming(
+        self, llm_name: str, prompt: str, max_tokens: int = 5
+    ) -> float:
+        client = openai.AsyncOpenAI(
             base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
         )
-        return super().get_ttft(llm_name, prompt, max_tokens, client)
+        return await super().call_streaming(llm_name, prompt, max_tokens, client)

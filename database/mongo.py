@@ -36,5 +36,4 @@ class DatabaseClient:
         return cls.db[collection_name]
 
 
-# NOTE: database client must be connected before importing any models
 DatabaseClient.connect()

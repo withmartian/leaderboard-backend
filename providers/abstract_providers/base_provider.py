@@ -3,10 +3,10 @@ from typing import Callable
 
 
 class BaseProvider(ABC):
-    NAME = None
+    SUPPORTED_MODELS = {}
 
     @abstractmethod
-    def call_http(
+    async def call_http(
         self,
         llm_name: str,
         prompt: str,
@@ -28,7 +28,9 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
-    def get_ttft(self, llm_name: str, prompt: str, max_tokens: int) -> float:
+    async def call_streaming(
+        self, llm_name: str, prompt: str, max_tokens: int
+    ) -> float:
         """
         Returns the time to first token (TTFT) in seconds via the openai client python package using streaming.
         If the provider doesn't support the openai client python package, use its SDK.
@@ -36,8 +38,5 @@ class BaseProvider(ABC):
         """
         pass
 
-    def get_request_method(self, request_method: str) -> Callable:
-        if request_method == "http":
-            return self.call_http
-        elif request_method == "sdk":
-            return self.call_sdk
+    def get_supported_models(self):
+        return list(self.SUPPORTED_MODELS.keys())
