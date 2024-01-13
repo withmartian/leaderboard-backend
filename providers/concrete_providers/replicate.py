@@ -10,14 +10,14 @@ load_dotenv()
 
 
 class Replicate(BaseProvider):
-    NAME = "replicate"
+    NAME = "Replicate"
     API_KEY = os.environ["REPLICATE_API_KEY"]
     MODEL_TO_URL = {
-        "llama-2-70b-chat": "https://api.replicate.com/v1/models/meta/llama-2-70b-chat/predictions",
+        "llama2-70b-chat": "https://api.replicate.com/v1/models/meta/llama2-70b-chat/predictions",
         "mixtral-8x7b": "https://api.replicate.com/v1/models/mistralai/mixtral-8x7b-instruct-v0.1/predictions",
     }
     SUPPORTED_MODELS = {
-        "llama-2-70b-chat": "meta/llama-2-70b-chat",
+        "llama2-70b-chat": "meta/llama2-70b-chat",
         "mixtral-8x7b": "mistralai/mixtral-8x7b-instruct-v0.1",
     }
 

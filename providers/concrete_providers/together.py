@@ -7,13 +7,13 @@ load_dotenv()
 
 
 class Together(OpenaiProvider):
-    NAME = "together"
+    NAME = "Together"
     API_KEY = os.environ["TOGETHER_API_KEY"]
     HTTP_URL = "https://api.together.xyz/inference"
     OPENAI_BASE_URL = "https://api.together.xyz/v1"
     SUPPORTED_MODELS = {
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "llama-2-70b-chat": "togethercomputer/llama-2-70b-chat",
+        "llama2-70b-chat": "togethercomputer/llama2-70b-chat",
     }
 
     def together_get_completion_tokens(response):

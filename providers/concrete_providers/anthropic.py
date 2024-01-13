@@ -10,7 +10,7 @@ load_dotenv()
 
 
 class AnthropicProvider(BaseProvider):
-    NAME = "anthropic"
+    NAME = "Anthropic"
     API_KEY = os.environ["ANTHROPIC_API_KEY"]
     SUPPORTED_MODELS = {
         "claude-2.1": "claude-2.1",
@@ -48,7 +48,7 @@ class AnthropicProvider(BaseProvider):
             model=self.SUPPORTED_MODELS[llm_name],
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
-            timeout=60,
+            timeout=180,
         )
         latency = time.time() - start
         return await self.CLIENT.count_tokens(response.completion) / latency

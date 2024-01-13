@@ -68,7 +68,7 @@ class OpenaiProvider(BaseProvider):
                 }
             ],
             max_tokens=max_tokens,
-            timeout=60,
+            timeout=180,
         )
         latency = time.time() - start
         return response.usage.completion_tokens / latency

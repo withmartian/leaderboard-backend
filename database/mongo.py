@@ -1,5 +1,5 @@
 import os
-
+import asyncio
 from dotenv import load_dotenv
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -9,7 +9,7 @@ from motor.motor_asyncio import (
 from pymongo.server_api import ServerApi
 
 DATABASE_NAME = "provider-leaderboard"
-COLLECTIONS = {"throughput", "ttft"}
+COLLECTIONS = {"throughput", "ttft", "static-data"}
 
 load_dotenv()
 
@@ -35,5 +35,22 @@ class DatabaseClient:
             raise ValueError(f"Collection {collection_name} does not exist")
         return cls.db[collection_name]
 
+    @classmethod
+    async def create_indexes(cls):
+        # index by start_time, provider, model because we will be querying by these fields
+        await cls.get_collection("throughput").create_index(
+            [("start_time", 1), ("provider", 1), ("model", 1)]
+        )
+        await cls.get_collection("ttft").create_index(
+            [("start_time", 1), ("provider", 1), ("model", 1)]
+        )
+
+
+# async def setup_database():
+#     DatabaseClient.connect()
+#     await DatabaseClient.create_indexes()
+
+
+# asyncio.run(setup_database())
 
 DatabaseClient.connect()

@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class ModelName(str, Enum):
-    LLAMA2_70B_CHAT = "llama-2-70b-chat"
+    LLAMA2_70B_CHAT = "llama2-70b-chat"
     MIXTRAL_8X7B = "mixtral-8x7b"
     GPT4 = "gpt-4"
     GPT4_TURBO = "gpt-4-turbo"

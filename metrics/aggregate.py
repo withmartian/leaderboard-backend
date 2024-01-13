@@ -42,7 +42,6 @@ async def aggregate_throughputs(
 async def aggregate_ttft(
     provider_name: str,
     llm_name: ModelName,
-    input_tokens: TokenCounts,
     concurrent_requests: int,
     num_days: int,
 ) -> Dict[str, float] | None:
@@ -57,7 +56,6 @@ async def aggregate_ttft(
         "provider_name": provider_name,
         "llm_name": llm_name,
         "concurrent_requests": concurrent_requests,
-        "input_tokens": input_tokens,
     }
     all_ttft = []
     async for document in ttft_collection.find(query):

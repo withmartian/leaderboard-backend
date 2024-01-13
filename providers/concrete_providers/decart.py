@@ -6,10 +6,10 @@ load_dotenv()
 
 
 class Decart(OpenaiProvider):
-    NAME = "decart"
+    NAME = "Decart"
     API_KEY = os.environ["DECART_API_KEY"]
     HTTP_URL = "https://api.decart.ai/v1/chat/completions"
     OPENAI_BASE_URL = "https://api.decart.ai/v1/"
     SUPPORTED_MODELS = {
-        "llama-2-70b-chat": "meta-llama/Llama-2-70b-chat-hf",
+        "llama2-70b-chat": "meta-llama/llama2-70b-chat-hf",
     }
