@@ -11,5 +11,5 @@ class Decart(OpenaiProvider):
     HTTP_URL = "https://api.decart.ai/v1/chat/completions"
     OPENAI_BASE_URL = "https://api.decart.ai/v1/"
     SUPPORTED_MODELS = {
-        "llama2-70b-chat": "meta-llama/llama2-70b-chat-hf",
+        "llama2-70b-chat": "meta-llama/llama-2-70b-chat-hf",
     }

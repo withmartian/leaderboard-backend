@@ -4,6 +4,7 @@ from typing import Callable
 
 class BaseProvider(ABC):
     SUPPORTED_MODELS = {}
+    RATE_LIMIT_EXCLUDED_PAIRS = []
 
     @abstractmethod
     async def call_http(
@@ -40,3 +41,6 @@ class BaseProvider(ABC):
 
     def get_supported_models(self):
         return list(self.SUPPORTED_MODELS.keys())
+
+    def get_rate_limit_excluded_pairs(self):
+        return self.RATE_LIMIT_EXCLUDED_PAIRS

@@ -12,5 +12,5 @@ class ModelName(str, Enum):
 
 
 class TokenCounts(int, Enum):
-    HUNDRED = 100
     THOUSAND = 1000
+    HUNDRED = 100

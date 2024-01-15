@@ -17,7 +17,7 @@ class Replicate(BaseProvider):
         "mixtral-8x7b": "https://api.replicate.com/v1/models/mistralai/mixtral-8x7b-instruct-v0.1/predictions",
     }
     SUPPORTED_MODELS = {
-        "llama2-70b-chat": "meta/llama2-70b-chat",
+        "llama2-70b-chat": "meta/llama-2-70b-chat",
         "mixtral-8x7b": "mistralai/mixtral-8x7b-instruct-v0.1",
     }
 

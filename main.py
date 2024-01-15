@@ -1,47 +1,23 @@
-from providers.provider_factory import ProviderFactory
-from utils.types import ModelName, TokenCounts
-from metrics.collect import get_throughputs, get_ttft
-import itertools
-from utils.types import ModelName, TokenCounts
-import asyncio
-from providers.provider_factory import ProviderFactory
+from fastapi import FastAPI
+from database.mongo import DatabaseClient  # Adjust the import path as needed
+from utils.types import TokenCounts
+from typing import List
 
-CONCURRENT_REQUESTS = [2, 20]  # FIXME
-AVERAGE_OVER = 20
+app = FastAPI()
 
 
-async def collect_all_metrics():
-    """
-    Collect throughputs and TTFT for all providers.
-    """
-    provider_names = ProviderFactory.get_all_provider_names()
-    tasks = []
-    for provider_name in provider_names:
-        task = asyncio.create_task(handle_provider(provider_name))
-        tasks.append(task)
-
-    await asyncio.gather(*tasks)
+@app.on_event("startup")
+async def startup_event():
+    DatabaseClient.connect()
+    await DatabaseClient.create_indexes()
 
 
-async def handle_provider(provider_name):
-    """
-    Handle all combinations for a specific provider.
-    """
-    combinations = itertools.product(
-        [provider_name],
-        ModelName,
-        TokenCounts,
-        CONCURRENT_REQUESTS,
-    )
-
-    for combo in combinations:
-        concurrent_requests = combo[-1]
-        try:
-            repeats = max(AVERAGE_OVER // concurrent_requests, 1)
-            await get_throughputs(*combo, num_repeats=repeats)
-        except:
-            pass
+@app.on_event("shutdown")
+async def shutdown_event():
+    await DatabaseClient.disconnect()
 
 
-if __name__ == "__main__":
-    asyncio.run(collect_all_metrics())
+# @app.get("/")
+# async def get_provider_data(
+#     output_tokens: TokenCounts, num_concurrent_requests: int, model_names: List[str]
+# ):

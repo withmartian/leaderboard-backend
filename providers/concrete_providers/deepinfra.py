@@ -12,5 +12,5 @@ class Deepinfra(OpenaiProvider):
     OPENAI_BASE_URL = "https://api.deepinfra.com/v1/openai"
     SUPPORTED_MODELS = {
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "llama2-70b-chat": "meta-llama/llama2-70b-chat-hf",
+        "llama2-70b-chat": "meta-llama/Llama-2-70b-chat-hf",
     }
