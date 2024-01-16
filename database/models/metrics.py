@@ -27,8 +27,7 @@ class StaticData(BaseModel):
     provider_name: str
     url: str
     logo_url: str
-    llm_name: ModelName
-    cost: Dict[str, float]
+    cost: Dict[str, Dict[str, float]]
     rate_limit: str
 
 
@@ -45,3 +44,12 @@ async def save_ttft(ttfts: TTFT) -> None:
 async def save_static_data(static_data: StaticData) -> None:
     static_data_collection = DatabaseClient.get_collection("static-data")
     await static_data_collection.insert_one(static_data.model_dump(by_alias=True))
+
+
+async def get_static_data(provider_name: str) -> StaticData | None:
+    static_data_collection = DatabaseClient.get_collection("static-data")
+    query = {
+        "provider_name": provider_name,
+    }
+    async for document in static_data_collection.find(query):
+        return document
