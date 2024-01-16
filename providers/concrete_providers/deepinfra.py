@@ -6,7 +6,7 @@ load_dotenv()
 
 
 class Deepinfra(OpenaiProvider):
-    NAME = "Deepinfra"
+    NAME = "DeepInfra"
     API_KEY = os.environ["DEEPINFRA_API_KEY"]
     HTTP_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
     OPENAI_BASE_URL = "https://api.deepinfra.com/v1/openai"

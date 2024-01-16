@@ -18,7 +18,7 @@ class DatabaseClient:
     db: AsyncIOMotorDatabase
 
     @classmethod
-    def connect(cls):
+    async def connect(cls):
         cls.client = AsyncIOMotorClient(
             os.environ["MONGO_URI"], server_api=ServerApi("1")
         )
@@ -45,11 +45,4 @@ class DatabaseClient:
         )
 
 
-# async def setup_database():
-#     DatabaseClient.connect()
-#     await DatabaseClient.create_indexes()
-
-
-# asyncio.run(setup_database())
-
-DatabaseClient.connect()
+# DatabaseClient.connect()

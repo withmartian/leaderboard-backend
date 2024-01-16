@@ -33,7 +33,6 @@ class Replicate(BaseProvider):
             self.MODEL_TO_URL[llm_name],
             json={"input": {"prompt": prompt, "max_new_tokens": max_tokens}},
             headers=headers,
-            timeout=60,
         )
 
         if response.status_code != 201:
