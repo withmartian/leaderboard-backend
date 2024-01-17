@@ -1,7 +1,6 @@
 from providers.abstract_providers.openai_provider import OpenaiProvider
 import os
 from dotenv import load_dotenv
-import openai
 
 load_dotenv()
 

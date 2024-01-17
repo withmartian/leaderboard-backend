@@ -6,3 +6,7 @@ fastapi == 0.100.0
 async-lru == 2.0.4
 uvicorn == 0.22.0
 motor == 3.2.0
+numpy == 1.25.2
+requests == 2.31.0
+asyncio == 3.4.3
+APScheduler == 3.10.4
