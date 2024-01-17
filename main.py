@@ -28,10 +28,9 @@ scheduler = AsyncIOScheduler()
 async def startup_event():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
-    first_run_time = datetime.now() + timedelta(minutes=1)
     scheduler.add_job(
         collect_metrics_with_retries,
-        trigger=IntervalTrigger(days=1, start_date=first_run_time),
+        trigger=IntervalTrigger(days=1),
     )
     scheduler.start()
 
