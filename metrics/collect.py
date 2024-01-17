@@ -11,12 +11,13 @@ from database.models.metrics import (
 from utils.types import ModelName
 import time
 import asyncio
-from typing import List, Callable
+from metrics.aggregate import aggregate_ttft, aggregate_throughputs
 import itertools
 
 NUM_WARMUP_REQUESTS = 3
-CONCURRENT_REQUESTS = [20, 2]  # FIXME
+CONCURRENT_REQUESTS = [50, 20, 2]  # FIXME
 AVERAGE_OVER = 10
+COLLECTION_RETRIES = 2
 
 
 async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
@@ -31,11 +32,21 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
         else NUM_WARMUP_REQUESTS
     )
     for _ in range(warmup_request):
-        await provider.call_sdk(llm_name=llm_name, prompt="Hi", max_tokens=5)
+        try:
+            await provider.call_sdk(llm_name=llm_name, prompt="Hi", max_tokens=5)
+        except Exception as e:
+            print(
+                f"Caught exception in validate_and_warmup for {provider_name} on {llm_name}: "
+                + str(e)
+            )
     return True
 
 
 def get_sleep_time(provider_name: str, num_concurrent_requests: int):
+    if (
+        provider_name == "Perplexity" or provider_name == "Lepton"
+    ) and num_concurrent_requests >= 20:
+        return 120
     if (
         provider_name == "Perplexity"
         or provider_name == "Lepton"
@@ -49,9 +60,9 @@ async def get_throughputs(
     provider_name: str,
     llm_name: ModelName,
     output_tokens: TokenCounts,
-    num_concurrent_requests: int = 30,
+    num_concurrent_requests: int,
     num_repeats: int = 1,
-) -> List[float]:
+):
     """
     Collect throughputs for num_concurrent requests for a  provider given a model, an input prompt, max_tokens, and a request method. Save results to DB.
     """
@@ -87,21 +98,20 @@ async def get_throughputs(
             print(
                 f"Saved throughputs for provider = {provider_name}, model = {llm_name},  output tokens = {output_tokens}, concurrent requests = {num_concurrent_requests}"
             )
-            sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
-            await asyncio.sleep(sleep_time)
         except Exception as e:
             print(
                 f"**** Caught exception in get_throughput for provider={provider_name}, model={llm_name}, output_tokens={output_tokens}, concurrent_requests={num_concurrent_requests}: {str(e)}"
             )
-    return raw_throughputs
+        sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
+        await asyncio.sleep(sleep_time)
 
 
 async def get_ttft(
     provider_name: str,
     llm_name: ModelName,
-    num_concurrent_requests: int = 30,
+    num_concurrent_requests: int,
     num_repeats: int = 1,
-) -> List[float]:
+) -> None:
     """
     Collect throughputs for num_concurrent_requests for a provider given a model, and an input prompt. Save results to DB.
     """
@@ -134,13 +144,12 @@ async def get_ttft(
             print(
                 f"Saved TTFT for provider = {provider_name}, model = {llm_name}, concurrent requests = {num_concurrent_requests}"
             )
-            sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
-            await asyncio.sleep(sleep_time)
         except Exception as e:
             print(
                 f"***** Caught exception in get_ttft for provider={provider_name}, model={llm_name}, concurrent_requests={num_concurrent_requests}: {str(e)}"
             )
-    return raw_ttfts
+        sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
+        await asyncio.sleep(sleep_time)
 
 
 async def provider_handler(provider_name: str, model_name: str):
@@ -155,23 +164,38 @@ async def provider_handler(provider_name: str, model_name: str):
         TokenCounts,
         CONCURRENT_REQUESTS,
     )
+
+    # collect TTFT and Throughput for combinations that hasn't already been collected within a half day
     for combo in ttft_combinations:
-        concurrent_requests = combo[-1]
+        provider_name, model, num_concurrent_requests = combo
+
+        if (
+            model
+            not in ProviderFactory.get_provider(provider_name).get_supported_models()
+        ) or await aggregate_ttft(provider_name, model, num_concurrent_requests, 0.5):
+            continue
         try:
-            repeats = max(AVERAGE_OVER // concurrent_requests, 1)
+            repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
             await get_ttft(*combo, num_repeats=repeats)
         except:
             pass
     for combo in throughput_combinations:
-        concurrent_requests = combo[-1]
+        provider_name, model, output_tokens, num_concurrent_requests = combo
+        if (
+            model
+            not in ProviderFactory.get_provider(provider_name).get_supported_models()
+        ) or await aggregate_throughputs(
+            provider_name, model, output_tokens, num_concurrent_requests, 0.5
+        ):
+            continue
         try:
-            repeats = max(AVERAGE_OVER // concurrent_requests, 1)
+            repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
             await get_throughputs(*combo, num_repeats=repeats)
         except:
             pass
 
 
-async def collect_all_metrics():
+async def collect_metrics():
     """
     Collect throughputs and TTFT for all providers.
     """
@@ -185,5 +209,11 @@ async def collect_all_metrics():
     await asyncio.gather(*tasks)
 
 
+async def collect_metrics_with_retries():
+    for _ in range(COLLECTION_RETRIES):
+        await collect_metrics()
+        asyncio.sleep(600)
+
+
 if __name__ == "__main__":
-    asyncio.run(collect_all_metrics())
+    asyncio.run(collect_metrics_with_retries())

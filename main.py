@@ -7,15 +7,19 @@ from providers.provider_factory import ProviderFactory
 from utils.types import ModelName
 from database.models.metrics import get_static_data
 import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from metrics.collect import collect_metrics_with_retries
 
 app = FastAPI()
+scheduler = AsyncIOScheduler()
 
 
 @app.on_event("startup")
 async def startup_event():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
-    print("connected to databases")
+    scheduler.add_job(collect_metrics_with_retries, "interval", days=1)
+    scheduler.start()
 
 
 @app.on_event("shutdown")

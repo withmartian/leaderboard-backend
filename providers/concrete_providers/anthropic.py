@@ -62,7 +62,7 @@ class AnthropicProvider(BaseProvider):
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
             stream=True,
-            timeout=60,
+            timeout=180,
         )
         async for chunk in stream:
             if chunk.completion is not None:

@@ -11,7 +11,7 @@ load_dotenv()
 
 class Replicate(BaseProvider):
     NAME = "Replicate"
-    API_KEY = os.environ["REPLICATE_API_KEY"]
+    API_KEY = os.environ["REPLICATE_API_TOKEN"]
     MODEL_TO_URL = {
         "llama2-70b-chat": "https://api.replicate.com/v1/models/meta/llama2-70b-chat/predictions",
         "mixtral-8x7b": "https://api.replicate.com/v1/models/mistralai/mixtral-8x7b-instruct-v0.1/predictions",
