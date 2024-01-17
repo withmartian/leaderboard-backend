@@ -8,7 +8,9 @@ from utils.types import ModelName
 from database.models.metrics import get_static_data
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from metrics.collect import collect_metrics_with_retries
+from datetime import datetime, timedelta
 
 app = FastAPI()
 scheduler = AsyncIOScheduler()
@@ -18,7 +20,11 @@ scheduler = AsyncIOScheduler()
 async def startup_event():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
-    scheduler.add_job(collect_metrics_with_retries, "interval", days=1)
+    first_run_time = datetime.now() + timedelta(minutes=1)
+    scheduler.add_job(
+        collect_metrics_with_retries,
+        trigger=IntervalTrigger(days=1, start_date=first_run_time),
+    )
     scheduler.start()
 
 
