@@ -82,7 +82,7 @@ async def get_provider_data(
     if "llama2-70b-chat" in selected_models:
         model_names.append(ModelName.LLAMA2_70B_CHAT.value)
     if "mixtral-8x7b" in selected_models:
-        model_names.append(ModelName.LLAMA2_70B_CHAT.value)
+        model_names.append(ModelName.MIXTRAL_8X7B.value)
     if "OpenAI models" in selected_models:
         model_names.extend(
             [
