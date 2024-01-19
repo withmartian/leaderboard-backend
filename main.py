@@ -49,9 +49,12 @@ def root():
 async def get_provider_data(
     output_tokens: TokenCounts = Query(...),
     num_concurrent_request: int = Query(...),
-    selected_models: List[str] = Query(...),
+    selected_models: List[str] = Query([]),
     num_days: int = Query(5),
 ):
+    if not selected_models:
+        return []
+
     async def query_provider_model(provider_name, model):
         if model not in model_names:
             return None
@@ -93,8 +96,7 @@ async def get_provider_data(
         )
     if "Anthropic models" in selected_models:
         model_names.extend([ModelName.CLAUDE2.value, ModelName.CLAUDE_INSTANT.value])
-    if not model_names:
-        return []
+
     tasks = [
         query_provider_model(provider_name, model)
         for provider_name in ProviderFactory.get_all_provider_names()
