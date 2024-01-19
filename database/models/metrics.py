@@ -27,7 +27,7 @@ class StaticData(BaseModel):
     provider_name: str
     url: str
     logo_url: str
-    cost: Dict[str, Dict[str, float]]
+    cost: Dict[str, Dict[str, float | str]]
     rate_limit: str
 
 

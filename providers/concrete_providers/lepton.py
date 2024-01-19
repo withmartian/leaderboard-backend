@@ -9,11 +9,12 @@ load_dotenv()
 class Lepton(OpenaiProvider):
     NAME = "Lepton"
     API_KEY = os.environ["LEPTON_API_KEY"]
-    SUPPORTED_MODELS = {"llama2-70b-chat": "llama2-70b"}
+    SUPPORTED_MODELS = {"llama2-70b-chat": "llama2-70b", "mixtral-8x7b": "mixtral-8x7b"}
 
     # a mapping of lepton's model alias to their special url
     MODEL_TO_OPENAI_BASE_URL = {
-        "llama2-70b-chat": "https://llama2-70b.lepton.run/api/v1"
+        "llama2-70b-chat": "https://llama2-70b.lepton.run/api/v1",
+        "mixtral-8x7b": "https://mixtral-8x7b.lepton.run/api/v1/",
     }
     MODEL_TO_HTTP_URL = {
         "llama2-70b-chat": "https://llama2-70b.lepton.run/api/v1/chat/completions"

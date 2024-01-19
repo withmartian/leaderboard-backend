@@ -67,7 +67,7 @@ static_data = [
         cost={
             "llama2-70b-chat": {"in": 0.8, "out": 0.8},
         },
-        rate_limit="customized",
+        rate_limit="10 RPM",
     ),
     StaticData(
         provider_name="Perplexity",
@@ -98,6 +98,15 @@ static_data = [
             "mixtral-8x7b": {"in": 0.6, "out": 0.6},
         },
         rate_limit="100 RPS",
+    ),
+    StaticData(
+        provider_name="Abacus",
+        url="https://abacus.ai/app/llmapis/playground",
+        logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Abacus%20logo.svg",
+        cost={
+            "mixtral-8x7b": {"in": "custom", "out": "custom"},
+        },
+        rate_limit="unknown",
     ),
 ]
 

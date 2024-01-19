@@ -8,3 +8,4 @@ from .deepinfra import Deepinfra
 from .decart import Decart
 from .openai import Openai
 from .anthropic import AnthropicProvider
+from .abacus import Abacus
