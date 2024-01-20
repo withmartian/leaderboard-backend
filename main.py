@@ -12,6 +12,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from metrics.collect import collect_metrics_with_retries
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Dict, Any, Tuple
 
 app = FastAPI()
 app.add_middleware(
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 scheduler = AsyncIOScheduler()
+query_cache: Dict[str, Tuple[Any, datetime]] = {}
 
 
 @app.on_event("startup")
@@ -43,6 +45,18 @@ async def shutdown_event():
 @app.get("/")
 def root():
     return {"message": "Provider Leaderboard is up and running!"}
+
+
+def generate_cache_key(
+    output_tokens, num_concurrent_request, selected_models, num_days
+):
+    return f"{output_tokens}-{num_concurrent_request}-{','.join(selected_models)}-{num_days}"
+
+
+def is_cache_expired(
+    timestamp: datetime, expiry_duration: timedelta = timedelta(days=0.5)
+) -> bool:
+    return datetime.now() - timestamp > expiry_duration
 
 
 @app.get("/get-provider-data")
@@ -81,6 +95,13 @@ async def get_provider_data(
             "ttft": ttft,
         }
 
+    # check if query exists in cache
+    cache_key = generate_cache_key(
+        output_tokens, num_concurrent_request, selected_models, num_days
+    )
+    if cache_key in query_cache and not is_cache_expired(query_cache[cache_key][1]):
+        return query_cache[cache_key][0]
+
     model_names = []
     if "llama2-70b-chat" in selected_models:
         model_names.append(ModelName.LLAMA2_70B_CHAT.value)
@@ -104,4 +125,6 @@ async def get_provider_data(
     ]
 
     results = await asyncio.gather(*tasks)
-    return [result for result in results if result]
+    output = [result for result in results if result]
+    query_cache[cache_key] = (output, datetime.now())
+    return output
