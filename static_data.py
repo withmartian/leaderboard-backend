@@ -38,7 +38,7 @@ static_data = [
         url="https://dashboard.decart.ai/",
         logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Decart%20logo.svg",
         cost={"llama2-70b-chat": {"in": 0.5, "out": 0.5}},
-        rate_limit="unknown",
+        rate_limit="1M TPM",
     ),
     StaticData(
         provider_name="DeepInfra",

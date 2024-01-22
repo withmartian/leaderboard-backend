@@ -15,7 +15,7 @@ from metrics.aggregate import aggregate_ttft, aggregate_throughputs
 import itertools
 
 NUM_WARMUP_REQUESTS = 3
-CONCURRENT_REQUESTS = [50, 20, 2]  # FIXME
+CONCURRENT_REQUESTS = [50, 20, 2]
 AVERAGE_OVER = 10
 COLLECTION_RETRIES = 2
 
@@ -26,11 +26,7 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
         return False
 
     # send warmup request
-    warmup_request = (
-        1
-        if provider_name == "Perplexity" or provider_name == "Lepton"
-        else NUM_WARMUP_REQUESTS
-    )
+    warmup_request = 1 if provider_name == "Perplexity" else NUM_WARMUP_REQUESTS
     for _ in range(warmup_request):
         try:
             await provider.call_sdk(llm_name=llm_name, prompt="Hi", max_tokens=5)
@@ -42,18 +38,8 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
     return True
 
 
-def get_sleep_time(provider_name: str, num_concurrent_requests: int):
-    if (
-        provider_name == "Perplexity" or provider_name == "Lepton"
-    ) and num_concurrent_requests >= 20:
-        return 120
-    if (
-        provider_name == "Perplexity"
-        or provider_name == "Lepton"
-        or num_concurrent_requests >= 20
-    ):
-        return 60
-    return 5
+def get_sleep_time(num_concurrent_requests: int):
+    return 120 if num_concurrent_requests >= 20 else 30
 
 
 async def get_throughputs(
@@ -102,7 +88,7 @@ async def get_throughputs(
             print(
                 f"**** Caught exception in get_throughput for provider={provider_name}, model={llm_name}, output_tokens={output_tokens}, concurrent_requests={num_concurrent_requests}: {str(e)}"
             )
-        sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
+        sleep_time = get_sleep_time(num_concurrent_requests)
         await asyncio.sleep(sleep_time)
 
 
@@ -148,7 +134,7 @@ async def get_ttft(
             print(
                 f"***** Caught exception in get_ttft for provider={provider_name}, model={llm_name}, concurrent_requests={num_concurrent_requests}: {str(e)}"
             )
-        sleep_time = get_sleep_time(provider_name, num_concurrent_requests)
+        sleep_time = get_sleep_time(num_concurrent_requests)
         await asyncio.sleep(sleep_time)
 
 
