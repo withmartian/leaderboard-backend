@@ -16,19 +16,6 @@ class Lepton(OpenaiProvider):
         "llama2-70b-chat": "https://llama2-70b.lepton.run/api/v1",
         "mixtral-8x7b": "https://mixtral-8x7b.lepton.run/api/v1/",
     }
-    MODEL_TO_HTTP_URL = {
-        "llama2-70b-chat": "https://llama2-70b.lepton.run/api/v1/chat/completions"
-    }
-
-    def call_http(
-        self,
-        llm_name: str,
-        prompt: str,
-        max_tokens: int,
-    ) -> float:
-        return super().call_http(
-            llm_name, prompt, max_tokens, self.MODEL_TO_HTTP_URL[llm_name]
-        )
 
     async def call_sdk(
         self,

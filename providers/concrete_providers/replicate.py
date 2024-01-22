@@ -21,42 +21,6 @@ class Replicate(BaseProvider):
         "mixtral-8x7b": "mistralai/mixtral-8x7b-instruct-v0.1",
     }
 
-    def call_http(self, llm_name: str, prompt: str, max_tokens: int) -> float:
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Token {self.API_KEY}",
-        }
-
-        # Start the prediction
-        start = time.time()
-        response = requests.post(
-            self.MODEL_TO_URL[llm_name],
-            json={"input": {"prompt": prompt, "max_new_tokens": max_tokens}},
-            headers=headers,
-        )
-
-        if response.status_code != 201:
-            raise Exception(
-                f"Failed to start prediction: {response.status_code} - {response.text}"
-            )
-
-        prediction_id = response.json()["id"]
-
-        # Poll for the prediction result
-        while True:
-            prediction_response = requests.get(
-                f"https://api.replicate.com/v1/predictions/{prediction_id}",
-                headers=headers,
-            )
-
-            if prediction_response.status_code != 200:
-                raise Exception(f"Failed to pool prediction results.")
-
-            prediction_data = prediction_response.json()
-            if prediction_data["status"] == "succeeded":
-                latency = time.time() - start
-                return prediction_data["metrics"]["output_token_count"] / latency
-
     async def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> float:
         start = time.time()
         output = await replicate.async_run(

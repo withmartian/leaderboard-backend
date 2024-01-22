@@ -8,7 +8,6 @@ load_dotenv()
 class Anyscale(OpenaiProvider):
     NAME = "Anyscale"
     API_KEY = os.environ["ANYSCALE_API_KEY"]
-    HTTP_URL = "https://api.endpoints.anyscale.com/v1/chat/completions"
     OPENAI_BASE_URL = "https://api.endpoints.anyscale.com/v1"
     SUPPORTED_MODELS = {
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",

@@ -8,7 +8,6 @@ load_dotenv()
 class Openai(OpenaiProvider):
     NAME = "OpenAI"
     API_KEY = os.environ["OPENAI_API_KEY"]
-    HTTP_URL = "https://api.openai.com/v1/chat/completions"
     OPENAI_BASE_URL = "https://api.openai.com/v1"
     SUPPORTED_MODELS = {
         "gpt-4": "gpt-4",

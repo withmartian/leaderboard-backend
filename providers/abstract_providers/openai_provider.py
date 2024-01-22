@@ -11,7 +11,6 @@ class OpenaiProvider(BaseProvider):
     """
 
     API_KEY = None
-    HTTP_URL = None
     OPENAI_BASE_URL = None
     CLIENT = None
     SUPPORTED_MODELS = None
@@ -26,33 +25,6 @@ class OpenaiProvider(BaseProvider):
     @staticmethod
     def default_get_completion_tokens(response: dict):
         return response["usage"]["completion_tokens"]
-
-    def call_http(
-        self,
-        llm_name: str,
-        prompt: str,
-        max_tokens: int,
-        url: str = None,
-        get_completion_tokens: Callable = default_get_completion_tokens,
-    ) -> float:
-        url = url or self.HTTP_URL
-        data = {
-            "model": self.SUPPORTED_MODELS[llm_name],
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens,
-        }
-        headers = {
-            "Authorization": f"Bearer {self.API_KEY}",
-            "Content-Type": "application/json",
-        }
-        try:
-            start = time.time()
-            response = requests.post(url, headers=headers, json=data, timeout=60)
-            latency = time.time() - start
-            response = response.json()
-            return get_completion_tokens(response) / latency
-        except Exception as e:
-            print(e)
 
     async def call_sdk(
         self, llm_name: str, prompt: str, max_tokens: int, client=None

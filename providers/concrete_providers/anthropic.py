@@ -16,31 +16,7 @@ class AnthropicProvider(BaseProvider):
         "claude-2.1": "claude-2.1",
         "claude-instant-1.2": "claude-instant-1.2",
     }
-    HTTP_URL = "https://api.anthropic.com/v1/complete"
     CLIENT = anthropic.AsyncAnthropic(api_key=API_KEY)
-
-    def call_http(
-        self,
-        llm_name: str,
-        prompt: str,
-        max_tokens: int,
-        url: str = None,
-    ) -> int:
-        data = {
-            "model": self.SUPPORTED_MODELS[llm_name],
-            "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
-            "max_tokens_to_sample": max_tokens,
-        }
-        headers = {
-            "x-api-key": self.API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        }
-        start = time.time()
-        response = requests.post(self.HTTP_URL, headers=headers, json=data, timeout=60)
-        latency = time.time() - start
-        response = response.json()
-        return self.CLIENT.count_tokens(response["completion"]) / latency
 
     async def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> int:
         start = time.time()
