@@ -24,7 +24,7 @@ class AnthropicProvider(BaseProvider):
             model=self.SUPPORTED_MODELS[llm_name],
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
-            timeout=180,
+            timeout=600,
         )
         latency = time.time() - start
         return await self.CLIENT.count_tokens(response.completion) / latency
@@ -38,7 +38,7 @@ class AnthropicProvider(BaseProvider):
             max_tokens_to_sample=max_tokens,
             prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
             stream=True,
-            timeout=180,
+            timeout=600,
         )
         async for chunk in stream:
             if chunk.completion is not None:
