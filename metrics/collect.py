@@ -1,5 +1,5 @@
 from providers.provider_factory import ProviderFactory
-from prompts import get_prompt
+from utils.prompts import get_prompt
 from database.models.metrics import (
     Throughputs,
     save_throughputs,
@@ -151,14 +151,14 @@ async def provider_handler(provider_name: str, model_name: str):
         CONCURRENT_REQUESTS,
     )
 
-    # collect TTFT and Throughput for combinations that hasn't already been collected within a half day
+    # collect TTFT and Throughput for combinations that hasn't already been collected within the past ~2.5h
     for combo in ttft_combinations:
         provider_name, model, num_concurrent_requests = combo
 
         if (
             model
             not in ProviderFactory.get_provider(provider_name).get_supported_models()
-        ) or await aggregate_ttft(provider_name, model, num_concurrent_requests, 0.5):
+        ) or await aggregate_ttft(provider_name, model, num_concurrent_requests, 0.1):
             continue
         try:
             repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
@@ -199,7 +199,3 @@ async def collect_metrics_with_retries():
     for _ in range(COLLECTION_RETRIES):
         await collect_metrics()
         asyncio.sleep(600)
-
-
-if __name__ == "__main__":
-    asyncio.run(collect_metrics_with_retries())
