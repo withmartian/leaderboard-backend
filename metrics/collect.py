@@ -171,7 +171,7 @@ async def provider_handler(provider_name: str, model_name: str):
             model
             not in ProviderFactory.get_provider(provider_name).get_supported_models()
         ) or await aggregate_throughputs(
-            provider_name, model, output_tokens, num_concurrent_requests, 0.5
+            provider_name, model, output_tokens, num_concurrent_requests, 0.1
         ):
             continue
         try:
