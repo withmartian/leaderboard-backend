@@ -104,7 +104,7 @@ static_data = [
         url="https://abacus.ai/app/llmapis/playground",
         logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Abacus%20logo.svg",
         cost={
-            "mixtral-8x7b": {"in": "custom", "out": "custom"},
+            "mixtral-8x7b": {"in": 0.3, "out": 1},
         },
         rate_limit="unknown",
     ),
