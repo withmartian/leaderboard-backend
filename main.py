@@ -16,6 +16,9 @@ from typing import Dict, Any, Tuple
 import random
 from apscheduler.triggers.cron import CronTrigger
 
+CACHE_EXPIRATION = timedelta(days=0.1)
+HOURS_BETWEEN_COLLECTIONS = 5
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -29,11 +32,9 @@ query_cache: Dict[str, Tuple[Any, datetime]] = {}
 
 
 async def schedule_daily_collections():
-    # Generate two random times that are at least 5h apart
-    time1 = random.randint(0, 18)
-    time2 = (time1 + random.randint(5, 23 - time1)) % 24
-
-    print(time1, time2)
+    # Generate two random times that are at least HOURS_BETWEEN_COLLECTIONS apart
+    time1 = random.randint(0, 23 - HOURS_BETWEEN_COLLECTIONS)
+    time2 = (time1 + random.randint(HOURS_BETWEEN_COLLECTIONS, 23 - time1)) % 24
 
     # Clear existing jobs
     for job in scheduler.get_jobs():
@@ -80,7 +81,7 @@ def generate_cache_key(
 
 
 def is_cache_expired(
-    timestamp: datetime, expiry_duration: timedelta = timedelta(days=0.1)
+    timestamp: datetime, expiry_duration: timedelta = CACHE_EXPIRATION
 ) -> bool:
     return datetime.now() - timestamp > expiry_duration
 

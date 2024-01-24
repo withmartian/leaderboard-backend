@@ -18,6 +18,8 @@ NUM_WARMUP_REQUESTS = 3
 CONCURRENT_REQUESTS = [50, 20, 2]
 AVERAGE_OVER = 10
 COLLECTION_RETRIES = 2
+RERUN_THRESHOLD_DAYS = 0.1
+SECONDS_BETWEEN_COLLECTIONS = 60 * 10
 
 
 async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
@@ -32,7 +34,7 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
             await provider.call_sdk(llm_name=llm_name, prompt="Hi", max_tokens=5)
         except Exception as e:
             print(
-                f"Caught exception in validate_and_warmup for {provider_name} on {llm_name}: "
+                f"***** Caught exception in validate_and_warmup for {provider_name} on {llm_name}: "
                 + str(e)
             )
     return True
@@ -158,7 +160,9 @@ async def provider_handler(provider_name: str, model_name: str):
         if (
             model
             not in ProviderFactory.get_provider(provider_name).get_supported_models()
-        ) or await aggregate_ttft(provider_name, model, num_concurrent_requests, 0.1):
+        ) or await aggregate_ttft(
+            provider_name, model, num_concurrent_requests, RERUN_THRESHOLD_DAYS
+        ):
             continue
         try:
             repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
@@ -171,7 +175,11 @@ async def provider_handler(provider_name: str, model_name: str):
             model
             not in ProviderFactory.get_provider(provider_name).get_supported_models()
         ) or await aggregate_throughputs(
-            provider_name, model, output_tokens, num_concurrent_requests, 0.1
+            provider_name,
+            model,
+            output_tokens,
+            num_concurrent_requests,
+            RERUN_THRESHOLD_DAYS,
         ):
             continue
         try:
@@ -198,4 +206,4 @@ async def collect_metrics():
 async def collect_metrics_with_retries():
     for _ in range(COLLECTION_RETRIES):
         await collect_metrics()
-        asyncio.sleep(600)
+        asyncio.sleep(SECONDS_BETWEEN_COLLECTIONS)
