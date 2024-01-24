@@ -29,9 +29,9 @@ query_cache: Dict[str, Tuple[Any, datetime]] = {}
 
 
 async def schedule_daily_collections():
-    # Generate two random times that are at least 3h apart
-    time1 = random.randint(0, 20)
-    time2 = (time1 + random.randint(3, 23 - time1)) % 24
+    # Generate two random times that are at least 5h apart
+    time1 = random.randint(0, 18)
+    time2 = (time1 + random.randint(5, 23 - time1)) % 24
 
     print(time1, time2)
 
@@ -80,7 +80,7 @@ def generate_cache_key(
 
 
 def is_cache_expired(
-    timestamp: datetime, expiry_duration: timedelta = timedelta(days=0.2)
+    timestamp: datetime, expiry_duration: timedelta = timedelta(days=0.1)
 ) -> bool:
     return datetime.now() - timestamp > expiry_duration
 

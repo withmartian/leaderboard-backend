@@ -39,7 +39,7 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
 
 
 def get_sleep_time(num_concurrent_requests: int):
-    return 120 if num_concurrent_requests >= 20 else 30
+    return 180 if num_concurrent_requests >= 20 else 60
 
 
 async def get_throughputs(
