@@ -16,7 +16,7 @@ from typing import Dict, Any, Tuple
 import random
 from apscheduler.triggers.cron import CronTrigger
 
-CACHE_EXPIRATION = timedelta(days=0.1)
+CACHE_EXPIRATION = timedelta(days=0.01)
 HOURS_BETWEEN_COLLECTIONS = 5
 
 app = FastAPI()

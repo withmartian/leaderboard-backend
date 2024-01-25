@@ -18,7 +18,7 @@ NUM_WARMUP_REQUESTS = 3
 CONCURRENT_REQUESTS = [50, 20, 2]
 AVERAGE_OVER = 10
 COLLECTION_RETRIES = 2
-RERUN_THRESHOLD_DAYS = 0.1
+RERUN_THRESHOLD_DAYS = 0.3
 SECONDS_BETWEEN_COLLECTIONS = 60 * 10
 
 
@@ -153,7 +153,7 @@ async def provider_handler(provider_name: str, model_name: str):
         CONCURRENT_REQUESTS,
     )
 
-    # collect TTFT and Throughput for combinations that hasn't already been collected within the past ~2.5h
+    # collect TTFT and Throughput for combinations that hasn't already been collected within a threshold
     for combo in ttft_combinations:
         provider_name, model, num_concurrent_requests = combo
 
