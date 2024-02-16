@@ -1,8 +1,7 @@
 from .base_provider import BaseProvider
-from typing import Callable
-import requests
 import time
 import openai
+import httpx
 
 
 class OpenaiProvider(BaseProvider):
@@ -20,6 +19,7 @@ class OpenaiProvider(BaseProvider):
             self.CLIENT = openai.AsyncOpenAI(
                 api_key=self.API_KEY,
                 base_url=self.OPENAI_BASE_URL,
+                http_client=httpx.AsyncClient(http2=True),
             )
 
     @staticmethod

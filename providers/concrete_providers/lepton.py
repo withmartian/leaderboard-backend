@@ -2,6 +2,7 @@ from providers.abstract_providers.openai_provider import OpenaiProvider
 import openai
 import os
 from dotenv import load_dotenv
+import httpx
 
 load_dotenv()
 
@@ -24,7 +25,9 @@ class Lepton(OpenaiProvider):
         max_tokens: int,
     ) -> float:
         client = openai.AsyncOpenAI(
-            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
+            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name],
+            api_key=self.API_KEY,
+            http_client=httpx.AsyncClient(http2=True),
         )
         return await super().call_sdk(llm_name, prompt, max_tokens, client)
 
@@ -32,6 +35,8 @@ class Lepton(OpenaiProvider):
         self, llm_name: str, prompt: str, max_tokens: int = 5
     ) -> float:
         client = openai.AsyncOpenAI(
-            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name], api_key=self.API_KEY
+            base_url=self.MODEL_TO_OPENAI_BASE_URL[llm_name],
+            api_key=self.API_KEY,
+            http_client=httpx.AsyncClient(http2=True),
         )
         return await super().call_streaming(llm_name, prompt, max_tokens, client)
