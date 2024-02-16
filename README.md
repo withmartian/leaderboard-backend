@@ -10,7 +10,7 @@ To learn more about how we collect and measure data, view our [Methodology](http
 To run your own backend and replicate how we manage our data collection, create your own `.env` file by following `.env-sample`
 ```
 pip install -r requirements.txt
-uvicron main:app --reload
+uvicorn main:app --reload
 ```
 
 ## Disclaimer
