@@ -6,10 +6,8 @@ import numpy as np
 from typing import Dict
 from database.mongo import DatabaseClient
 from datetime import datetime, timedelta
-from async_lru import alru_cache
 
 
-@alru_cache(maxsize=128)
 async def aggregate_throughputs(
     provider_name: str,
     llm_name: ModelName,
@@ -41,7 +39,6 @@ async def aggregate_throughputs(
         }
 
 
-@alru_cache(maxsize=128)
 async def aggregate_ttft(
     provider_name: str,
     llm_name: ModelName,
