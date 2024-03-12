@@ -58,7 +58,7 @@ static_data = [
             "llama2-70b-chat": {"in": 0.9, "out": 0.9},
             "mixtral-8x7b": {"in": 0.5, "out": 0.5},
         },
-        rate_limit="100 RPM",
+        rate_limit="600 RPM",
     ),
     StaticData(
         provider_name="Lepton",
@@ -77,7 +77,7 @@ static_data = [
             "llama2-70b-chat": {"in": 1.0, "out": 1.0},
             "mixtral-8x7b": {"in": 0.6, "out": 0.6},
         },
-        rate_limit="12 RPM",
+        rate_limit="24 RPM",
     ),
     StaticData(
         provider_name="Replicate",
