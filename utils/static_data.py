@@ -74,8 +74,8 @@ static_data = [
         url="https://docs.perplexity.ai/docs/getting-started",
         logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Perplexity%20logo.svg",
         cost={
-            "llama2-70b-chat": {"in": 0.7, "out": 2.8},
-            "mixtral-8x7b": {"in": 0.6, "out": 1.8},
+            "llama2-70b-chat": {"in": 1.0, "out": 1.0},
+            "mixtral-8x7b": {"in": 0.6, "out": 0.6},
         },
         rate_limit="12 RPM",
     ),
