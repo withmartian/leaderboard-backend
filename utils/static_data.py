@@ -55,8 +55,8 @@ static_data = [
         url="https://readme.fireworks.ai/docs/quickstart",
         logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Fireworks%20logo.svg",
         cost={
-            "llama2-70b-chat": {"in": 0.7, "out": 2.8},
-            "mixtral-8x7b": {"in": 0.4, "out": 1.6},
+            "llama2-70b-chat": {"in": 0.9, "out": 0.9},
+            "mixtral-8x7b": {"in": 0.5, "out": 0.5},
         },
         rate_limit="100 RPM",
     ),
