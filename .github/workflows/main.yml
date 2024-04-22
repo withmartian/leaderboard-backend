@@ -1,0 +1,117 @@
+# name: main
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+#     inputs:
+#       env:
+#         type: environment
+#         description: 'Select environment to deploy'
+#         required: true
+#         default: 'dev'
+
+# concurrency:
+#   group: ${{ github.ref }}-1
+#   cancel-in-progress: true
+
+# env:
+#   AWS_REGION: ap-southeast-1
+#   ECS_TASK_DEFINITION: task-definition.json
+#   IMAGE_TAG: ${{ github.sha }}
+
+# permissions:
+#   id-token: write # This is required for requesting the JWT
+#   contents: read # This is required for actions/checkout
+
+# jobs:
+#   build:
+#     name: Build[${{ github.event.inputs.env || 'dev' }}]
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: ${{ github.event.inputs.env || 'dev' }}
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+#           aws-region: ${{ env.AWS_REGION }}
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+
+#       - name: Cache Docker layers
+#         uses: actions/cache@v3
+#         with:
+#           path: /tmp/.buildx-cache
+#           key: ${{ runner.os }}-buildx-${{ github.sha }}
+#           restore-keys: |
+#             ${{ runner.os }}-buildx-
+
+#       - name: Build, tag and push image to Amazon ECR
+#         uses: docker/build-push-action@v4
+#         with:
+#           context: .
+#           file: Dockerfile
+#           provenance: false
+#           push: true
+#           tags: |
+#             ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+#           # cache-from: type=local,src=/tmp/.buildx-cache
+#           # cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+#       # - name: Move cache
+#       #   run: |
+#       #     rm -rf /tmp/.buildx-cache
+#       #     mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+#   deploy:
+#     name: Deploy[${{ github.event.inputs.env || 'dev' }}]
+#     needs: [build]
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: ${{ github.event.inputs.env || 'dev' }}
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+#           aws-region: ${{ env.AWS_REGION }}
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
+
+#       - name: Download task definition
+#         run: |
+#           aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK }} \
+#           --query taskDefinition > task-definition.json
+
+#       - name: Fill in the new image ID in the Amazon ECS task definition
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.ECS_TASK_DEFINITION }}
+#           container-name: ${{ vars.CONTAINER_NAME }}
+#           image: ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+#       - name: Deploy Amazon ECS task definition
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ vars.ECS_SERVICE }}
+#           cluster: ${{ vars.ECS_CLUSTER }}
+#           wait-for-service-stability: true
