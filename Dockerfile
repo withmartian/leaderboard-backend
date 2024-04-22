@@ -18,4 +18,8 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Switch from uvicorn to gunicorn to better utilize multi-core CPUs.
+# Tytically, the number of workers needs be adjusted according to the hardware.
+CMD [ "sh", "-c", "gunicorn src.main:app --timeout 300 --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000" ]
