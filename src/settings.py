@@ -6,10 +6,11 @@ class Settings(BaseSettings):
     env: str
 
     mongo_uri: str
-    aws_sqs_arn: str
 
-    cache_expiration_in_days: float
-    hours_between_collections: int
+    aws_region: str
+    aws_sqs_url: str
+    aws_sqs_max_messages: int
+    aws_sqs_wait_time_seconds: int
 
     abacus_api_key: str
     anthropic_api_key: str
@@ -22,6 +23,9 @@ class Settings(BaseSettings):
     perplexity_api_key: str
     replicate_api_token: str
     together_api_key: str
+
+    cache_expiration_in_days: float
+    hours_between_collections: int
 
     class Config:
         files = [".env"]

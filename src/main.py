@@ -5,11 +5,12 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Tuple
 
-from fastapi import FastAPI, Query
+from fastapi import BackgroundTasks, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from .aws.sqs_client import receive_messages
 from .database.models.metrics import get_static_data
-from .database.mongo import DatabaseClient  # Adjust the import path as needed
+from .database.mongo import DatabaseClient
 from .metrics.aggregate import aggregate_throughputs, aggregate_ttft
 from .metrics.collect import collect_metrics_with_retries
 from .providers.provider_factory import ProviderFactory
@@ -28,6 +29,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# TODO: clean up local scheduler
 scheduler = AsyncIOScheduler()
 query_cache: Dict[str, Tuple[Any, datetime]] = {}
 
@@ -58,11 +61,13 @@ async def schedule_daily_collections():
 async def startup_event():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
-    scheduler.add_job(
-        schedule_daily_collections,
-        trigger=CronTrigger(hour=0, minute=0),
-    )
-    scheduler.start()
+    # scheduler.add_job(
+    #     schedule_daily_collections,
+    #     trigger=CronTrigger(hour=0, minute=0),
+    # )
+    # scheduler.start()
+
+    BackgroundTasks().add_task(receive_messages)
 
 
 @app.on_event("shutdown")
