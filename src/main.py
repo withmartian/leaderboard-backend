@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -20,6 +21,8 @@ from .utils.types import ModelName, TokenCounts
 
 CACHE_EXPIRATION = timedelta(days=settings.cache_expiration_in_days)
 HOURS_BETWEEN_COLLECTIONS = settings.hours_between_collections
+
+logging.config.fileConfig("logging.ini", disable_existing_loggers=False)
 
 app = FastAPI()
 app.add_middleware(

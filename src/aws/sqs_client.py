@@ -1,8 +1,11 @@
 import boto3
+import logging
 
 from ..metrics.collect import collect_metrics_with_retries
 from ..settings import settings
 
+
+logger = logging.getLogger(__name__)
 
 sqs_client = boto3.client("sqs", region_name=settings.aws_region)
 
@@ -24,5 +27,5 @@ async def receive_messages():
 
 
 async def handle_message(message):
-    print(f"Received message: {message['Body']}")
+    logger.info(f"Received message from SQS: {message['Body']}")
     await collect_metrics_with_retries()
