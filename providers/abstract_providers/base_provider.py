@@ -1,32 +1,50 @@
-from abc import ABC, abstractmethod
-from typing import Callable
+from abc import ABC
+import time
+from adapters.adapter_factory import AdapterFactory
+from adapters.types import Prompt
+import json
 
 
 class BaseProvider(ABC):
-    SUPPORTED_MODELS = {}
-    RATE_LIMIT_EXCLUDED_PAIRS = []
+    ADAPTER_MODEL_STR_MAP = (
+        {}
+    )  # maps leaderboard model name to adapter model string, which is f"{vendor_name}/{provider_name}""
+    PROVIDER_NAME = None
 
-    @abstractmethod
-    def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> int:
-        """
-        Calls the provider endpoint through openai client python package if available, else the provider's own python SDK.
-        Return the tokens/s of the call
-        """
-        pass
+    def get_adapter_model_str(self, llm_name: str):
+        return self.ADAPTER_MODEL_STR_MAP[llm_name]
 
-    @abstractmethod
+    def get_supported_models(self):
+        return list(self.ADAPTER_MODEL_STR_MAP.keys())
+
+    async def call_sdk(self, llm_name: str, prompt: str, max_tokens: int) -> float:
+        adapter_str = (
+            f"{self.get_provider_name().lower()}/{self.get_adapter_model_str(llm_name)}"
+        )
+        adapter = AdapterFactory.get_adapter(adapter_str)
+        input = adapter.convert_to_input(Prompt(prompt))
+        start = time.time()
+        response = await adapter.execute_async(
+            input, max_tokens=max_tokens, timeout=600
+        )
+        latency = time.time() - start
+        return response.token_counts.completion / latency
+
     async def call_streaming(
         self, llm_name: str, prompt: str, max_tokens: int
     ) -> float:
-        """
-        Returns the time to first token (TTFT) in seconds via the openai client python package using streaming.
-        If the provider doesn't support the openai client python package, use its SDK.
-        Return the TTFT in seconds
-        """
-        pass
+        adapter = AdapterFactory.get_adapter(self.get_adapter_model_str(llm_name))
+        input = adapter.convert_to_input(Prompt(prompt))
+        start = time.time()
+        adapter_response = await adapter.execute_async(
+            input, max_tokens=max_tokens, stream=True, timeout=600
+        )
 
-    def get_supported_models(self):
-        return list(self.SUPPORTED_MODELS.keys())
+        async for chunk in adapter_response.response:
+            chunk = json.loads(chunk[6:].strip())
+            if chunk["choices"][0]["delta"]["content"] is not None:
+                return time.time() - start
 
-    def get_rate_limit_excluded_pairs(self):
-        return self.RATE_LIMIT_EXCLUDED_PAIRS
+    @classmethod
+    def get_provider_name(cls) -> str:
+        return cls.PROVIDER_NAME

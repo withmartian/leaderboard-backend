@@ -1,15 +1,11 @@
-from providers.abstract_providers.openai_provider import OpenaiProvider
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from providers.abstract_providers.base_provider import BaseProvider
 
 
-class Perplexity(OpenaiProvider):
-    NAME = "Perplexity"
-    API_KEY = os.environ["PERPLEXITY_API_KEY"]
-    OPENAI_BASE_URL = "https://api.perplexity.ai"
-    SUPPORTED_MODELS = {
-        "mixtral-8x7b": "mixtral-8x7b-instruct",
-        "llama2-70b-chat": "llama-2-70b-chat",
+class Perplexity(BaseProvider):
+    ADAPTER_MODEL_STR_MAP = {
+        "llama-3-8b-chat": "perplexity/llama-3-8b-instruct",
+        "llama-3-70b-chat": "perplexity/llama-3-70b-instruct",
+        "mixtral-8x7b": "perplexity/mixtral-8x7b-instruct",
+        "mistral-7b-chat": "perplexity/mistral-7b-instruct",
     }
+    PROVIDER_NAME = "Perplexity"
