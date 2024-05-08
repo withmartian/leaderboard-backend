@@ -1,19 +1,14 @@
-from providers.abstract_providers.openai_provider import OpenaiProvider
-import os
-from typing import Callable
-from dotenv import load_dotenv
-
-load_dotenv()
+from providers.abstract_providers.base_provider import BaseProvider
 
 
-class Together(OpenaiProvider):
-    NAME = "Together"
-    API_KEY = os.environ["TOGETHER_API_KEY"]
-    OPENAI_BASE_URL = "https://api.together.xyz/v1"
-    SUPPORTED_MODELS = {
+class Together(BaseProvider):
+    ADAPTER_MODEL_STR_MAP = {
+        "dbrx-instruct": "databricks/dbrx-instruct",
+        "llama-3-8b-chat": "meta-llama/Llama-3-8b-chat-hf",
+        "llama-3-70b-chat": "meta-llama/Llama-3-70b-chat-hf",
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "llama2-70b-chat": "togethercomputer/llama-2-70b-chat",
+        "mixtral-8x22b": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+        "mistral-7b-chat": "mistralai/Mistral-7B-Instruct-v0.1",
+        "gemma-7b-instruct": "google/gemma-7b-it",
     }
-
-    def together_get_completion_tokens(response):
-        return response["output"]["usage"]["completion_tokens"]
+    PROVIDER_NAME = "Together"

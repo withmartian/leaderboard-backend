@@ -1,9 +1,8 @@
-openai == 1.6.1
+openai == 1.23.6
 replicate == 0.22.0
 python-dotenv == 1.0.0
-anthropic == 0.3.11
+anthropic == 0.16.0
 fastapi == 0.100.0
-async-lru == 2.0.4
 uvicorn == 0.22.0
 motor == 3.2.0
 numpy == 1.25.2
@@ -12,3 +11,4 @@ asyncio == 3.4.3
 APScheduler == 3.10.4
 httpx == 0.26.0
 h2 == 4.1.0
+martian-adapters

@@ -1,15 +1,14 @@
-from providers.abstract_providers.openai_provider import OpenaiProvider
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from providers.abstract_providers.base_provider import BaseProvider
 
 
-class Fireworks(OpenaiProvider):
-    NAME = "Fireworks"
-    API_KEY = os.environ["FIREWORKS_API_KEY"]
-    OPENAI_BASE_URL = "https://api.fireworks.ai/inference/v1"
-    SUPPORTED_MODELS = {
+class Fireworks(BaseProvider):
+    ADAPTER_MODEL_STR_MAP = {
+        "dbrx-instruct": "accounts/fireworks/models/mistral-7b-instruct-v0p2",
+        "llama-3-8b-chat": "accounts/fireworks/models/llama-v3-8b-instruct",
+        "llama-3-70b-chat": "accounts/fireworks/models/llama-v3-70b-instruct",
         "mixtral-8x7b": "accounts/fireworks/models/mixtral-8x7b-instruct",
-        "llama2-70b-chat": "accounts/fireworks/models/llama-v2-70b-chat",
+        "mixtral-8x22b": "accounts/fireworks/models/mixtral-8x22b-instruct",
+        "mistral-7b-chat": "accounts/fireworks/models/mistral-7b-instruct-v0p2",
+        "gemma-7b-instruct": "accounts/fireworks/models/gemma-7b-it",
     }
+    PROVIDER_NAME = "Fireworks"
