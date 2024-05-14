@@ -31,7 +31,7 @@ jobs:
       - gcp-cli/setup
       - add_ssh_keys:
           fingerprints:
-            - ${SSH_FINGERPRINT}
+            - "cd:78:c1:25:78:07:fa:21:e8:c9:ed:2f:6f:80:79:8b"
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -46,7 +46,6 @@ jobs:
       - run:
           name: "Clone Infra & Setup Kube Config"
           command: |
-            echo $SSH_FINGERPRINT
             git clone --depth 1 -b $CIRCLE_BRANCH ${INFRA_PROJECT_GIT_URL} ~/infra
             cd ~/infra
             rm ~/infra/helm/${RELEASE_NAME}/values.yaml
