@@ -31,7 +31,7 @@ jobs:
       - gcp-cli/setup
       - add_ssh_keys:
           fingerprints:
-            - "${FINGERPRINT}"
+            - ${SSH_FINGERPRINT}
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -71,8 +71,7 @@ jobs:
 workflows:
   branch-tests: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
-    jobs:
-
+    jobss:
       - build-docker-and-deploy:
           name: "Deploy to Develop"
           env-name: 'develop'
@@ -82,6 +81,7 @@ workflows:
             - router_backend_envs
             - docker_repo_info
             - leaderboard_secrets
+            - circle_ci_fingerprint
           filters:
             branches:
               only:
@@ -95,7 +95,7 @@ workflows:
             - llm_api_keys_circleci_context
             - router_backend_envs
             - docker_repo_info
-            - leaderboard_secrets
+            - circle_ci_fingerprint
           filters:
             branches:
               only:
