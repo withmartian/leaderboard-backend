@@ -63,6 +63,7 @@ jobs:
           release_name: ${RELEASE_NAME}
           namespace: << parameters.env-name >>
           chart: /home/circleci/infra/helm/${RELEASE_NAME}
+          timeout: 10m0s
           atomic: true
           values_to_override: backendDeployment.backendApp.image.tag=${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM},backendDeployment.backendApp.image.repository=${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME},backendSecrets.abacusApiKey=${ABACUS_API_KEY},backendSecrets.anthropicApiKey=${ANTHROPIC_API_KEY},backendSecrets.anyscaleApiKey=${ANYSCALE_API_KEY},backendSecrets.decartApiKey=${DECART_API_KEY},backendSecrets.deepinfraApiKey=${DEEPINFRA_API_KEY},backendSecrets.fireworksApiKey=${FIREWORKS_API_KEY},backendSecrets.leptonApiKey=${LEPTON_API_KEY},backendSecrets.mongoUri=<< parameters.mongo-uri >>,backendSecrets.openaiApiKey=${OPENAI_API_KEY},backendSecrets.perplexityApiKey=${PERPLEXITY_API_KEY},backendSecrets.replicateApiToken=${REPLICATE_API_TOKEN},backendSecrets.togetherApiKey=${TOGETHER_API_KEY}
 
