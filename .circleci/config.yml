@@ -82,9 +82,6 @@ workflows:
             - router_backend_envs
             - docker_repo_info
             - leaderboard_secrets
-          requires:
-          - build-and-test
-          - pre-commit
           filters:
             branches:
               only:
