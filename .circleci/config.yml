@@ -66,7 +66,7 @@ jobs:
           reuse_values: true
 
 
-# Invoke jobs via workflows
+# Invoke jobs in workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   branch-tests: # This is the name of the workflow, feel free to change it to better match your workflow.
