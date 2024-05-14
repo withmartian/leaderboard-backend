@@ -48,7 +48,6 @@ jobs:
           command: |
             git clone --depth 1 -b $CIRCLE_BRANCH ${INFRA_PROJECT_GIT_URL} ~/infra
             cd ~/infra
-            rm ~/infra/helm/${RELEASE_NAME}/values.yaml
             gcloud components install gke-gcloud-auth-plugin
             gcloud container clusters get-credentials << parameters.env-name >>-cluster --project ${GOOGLE_PROJECT_ID} --zone ${LEADERBOARD_ZONE}
       - helm/install_helm_client:
