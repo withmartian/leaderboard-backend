@@ -31,7 +31,7 @@ jobs:
       - gcp-cli/setup
       - add_ssh_keys:
           fingerprints:
-            - "cd:78:c1:25:78:07:fa:21:e8:c9:ed:2f:6f:80:79:8b"
+            - "SHA256:cxHNhNd9YmXtDVpuSl5qb5NXA5JFVZhjcnrYERSb39M"
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
