@@ -1,0 +1,125 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/configuration-reference
+version: 2.1
+
+# Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
+# See: https://circleci.com/docs/orb-intro/
+orbs:
+  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
+  python: circleci/python@1.5.0
+  node: circleci/node@5.1.0
+  gcp-cli: circleci/gcp-cli@3.1.1
+  helm: circleci/helm@3.0.1
+
+
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/configuration-reference/#jobs
+jobs:
+  build-docker-and-deploy:
+    parameters:
+      env-name:
+        type: string
+        default: ""
+    docker:
+      - image: cimg/python:3.11.5
+    steps:
+      - checkout
+      - gcp-cli/setup
+      - add_ssh_keys:
+          fingerprints:
+            - "${FINGERPRINT}"
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: "Build and push docker image"
+          command: |
+            gcloud auth configure-docker ${DOCKER_BASE}
+            gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${DOCKER_BASE}
+            docker build --build-arg GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS}" -t ${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:latest .
+            docker tag ${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:latest "${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+            docker push "${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+            docker push "${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:latest"
+      - run:
+          name: "Clone Infra & Setup Kube Config"
+          command: |
+            git clone --depth 1 -b $CIRCLE_BRANCH ${INFRA_PROJECT_GIT_URL} ~/infra
+            cd ~/infra
+            rm ~/infra/helm/${RELEASE_NAME}/values.yaml
+            gcloud components install gke-gcloud-auth-plugin
+            gcloud container clusters get-credentials << parameters.env-name >>-cluster --project ${GOOGLE_PROJECT_ID} --zone ${LEADERBOARD_ZONE}
+      - helm/install_helm_client:
+          version: v3.14.1
+      - run:
+          name: "Install Helm Deps"
+          command: |
+            helm dependency build ~/infra/helm/${RELEASE_NAME}
+      - helm/upgrade_helm_chart:
+          release_name: ${RELEASE_NAME}
+          namespace: << parameters.env-name >>
+          chart: /home/circleci/infra/helm/${RELEASE_NAME}
+          atomic: true
+          values_to_override: backendDeployment.backendApp.image.tag=${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM},backendDeployment.backendApp.image.repository=${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}
+          reuse_values: true
+
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  branch-tests: # This is the name of the workflow, feel free to change it to better match your workflow.
+    # Inside the workflow, you define the jobs you want to run.
+    jobs:
+
+      - build-docker-and-deploy:
+          name: "Deploy to Develop"
+          env-name: 'develop'
+          context:
+            - gcp_code_repository_access
+            - llm_api_keys_circleci_context
+            - router_backend_envs
+            - docker_repo_info
+            - leaderboard_secrets
+          filters:
+            branches:
+              only:
+                - develop
+
+      - build-docker-and-deploy:
+          name: "Deploy to Staging"
+          env-name: 'staging'
+          context:
+            - gcp_code_repository_access
+            - llm_api_keys_circleci_context
+            - router_backend_envs
+            - docker_repo_info
+            - leaderboard_secrets
+          filters:
+            branches:
+              only:
+                - main
+
+      - hold:
+          type: approval
+          filters:
+            branches:
+              only:
+                - main
+
+      - build-docker-and-deploy:
+          name: "Deploy to Prod"
+          env-name: 'prod'
+          context:
+            - gcp_code_repository_access
+            - llm_api_keys_circleci_context
+            - router_backend_envs
+            - docker_repo_info
+            - leaderboard_secrets
+          requires:
+          - hold
+          filters:
+            branches:
+              only:
+                - main
