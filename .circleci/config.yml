@@ -24,6 +24,9 @@ jobs:
       env-name:
         type: string
         default: ""
+      mongo-uri:
+        type: string
+        default: ""
     docker:
       - image: cimg/python:3.11.5
     steps:
@@ -61,9 +64,23 @@ jobs:
           namespace: << parameters.env-name >>
           chart: /home/circleci/infra/helm/${RELEASE_NAME}
           atomic: true
-          values_to_override: backendDeployment.backendApp.image.tag=${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM},backendDeployment.backendApp.image.repository=${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}
-          reuse_values: true
+          values_to_override:
+          - backendDeployment.backendApp.image.tag=${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}
+          - backendDeployment.backendApp.image.repository=${DOCKER_BASE}/${GOOGLE_PROJECT_ID}/${DOCKER_REPO}/${DOCKER_IMAGE_NAME}
+          - llmApiKeysSecrets.abacus_api_key=${ABACUS_API_KEY}
+          - llmApiKeysSecrets.anthropic_api_key=${ANTHROPIC_API_KEY}
+          - llmApiKeysSecrets.anyscale_api_key=${ANYSCALE_API_KEY}
+          - llmApiKeysSecrets.decart_api_key=${DECART_API_KEY}
+          - llmApiKeysSecrets.deepinfra_api_key=${DEEPINFRA_API_KEY}
+          - llmApiKeysSecrets.fireworks_api_key=${FIREWORKS_API_KEY}
+          - llmApiKeysSecrets.lepton_api_key=${LEPTON_API_KEY}
+          - llmApiKeysSecrets.mongo_uri=<< parameters.mongo-uri >>
+          - llmApiKeysSecrets.openai_api_key=${OPENAI_API_KEY}
+          - llmApiKeysSecrets.perplexity_api_key=${PERPLEXITY_API_KEY}
+          - llmApiKeysSecrets.replicate_api_token=${REPLICATE_API_TOKEN}
+          - llmApiKeysSecrets.together_api_key=${TOGETHER_API_KEY}
 
+          reuse_values: true
 
 # Invoke jobs in workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
@@ -74,6 +91,7 @@ workflows:
       - build-docker-and-deploy:
           name: "Deploy to Develop"
           env-name: 'develop'
+          mongo-uri: ${DEVELOP_MONGO_URI}
           context:
             - gcp_code_repository_access
             - llm_api_keys_circleci_context
@@ -81,6 +99,7 @@ workflows:
             - docker_repo_info
             - leaderboard_secrets
             - circle_ci_fingerprint
+            - mongo_uris
           filters:
             branches:
               only:
@@ -95,6 +114,7 @@ workflows:
             - router_backend_envs
             - docker_repo_info
             - circle_ci_fingerprint
+            - mongo_uris
           filters:
             branches:
               only:
@@ -116,6 +136,7 @@ workflows:
             - router_backend_envs
             - docker_repo_info
             - leaderboard_secrets
+            - mongo_uris
           requires:
           - hold
           filters:
