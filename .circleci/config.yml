@@ -71,7 +71,7 @@ jobs:
 workflows:
   branch-tests: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
-    jobss:
+    jobs:
       - build-docker-and-deploy:
           name: "Deploy to Develop"
           env-name: 'develop'
