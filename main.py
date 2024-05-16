@@ -7,17 +7,11 @@ from providers.provider_factory import ProviderFactory
 from utils.types import ModelName
 from database.models.metrics import get_static_data
 import asyncio
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from metrics.collect import collect_metrics_with_retries
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any, Tuple
-import random
-from apscheduler.triggers.cron import CronTrigger
 
 CACHE_EXPIRATION = timedelta(days=0.01)
-HOURS_BETWEEN_COLLECTIONS = 5
 
 app = FastAPI()
 app.add_middleware(
@@ -27,42 +21,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-scheduler = AsyncIOScheduler()
 query_cache: Dict[str, Tuple[Any, datetime]] = {}
-
-
-async def schedule_daily_collections():
-    # Generate two random times that are at least HOURS_BETWEEN_COLLECTIONS apart
-    time1 = random.randint(0, 23 - HOURS_BETWEEN_COLLECTIONS)
-    time2 = (time1 + random.randint(HOURS_BETWEEN_COLLECTIONS, 23 - time1)) % 24
-
-    # Clear existing jobs
-    for job in scheduler.get_jobs():
-        if job.id.startswith("daily_collection"):
-            job.remove()
-
-    scheduler.add_job(
-        collect_metrics_with_retries,
-        trigger=CronTrigger(hour=time1, minute=0),
-        id="daily_collection_1",
-    )
-    scheduler.add_job(
-        collect_metrics_with_retries,
-        trigger=CronTrigger(hour=time2, minute=0),
-        id="daily_collection_2",
-    )
 
 
 @app.on_event("startup")
 async def startup_event():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
-    scheduler.add_job(
-        schedule_daily_collections,
-        trigger=CronTrigger(hour=0, minute=0),
-    )
-    scheduler.start()
-
 
 @app.on_event("shutdown")
 async def shutdown_event():
