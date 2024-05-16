@@ -7,9 +7,10 @@ async def main():
     await DatabaseClient.connect()
     await DatabaseClient.create_indexes()
 
-    await collect_metrics_with_retries()
-
-    await DatabaseClient.disconnect()
+    try:
+        await collect_metrics_with_retries()
+    finally:
+        await DatabaseClient.disconnect()
 
 if __name__ == "__main__":
     asyncio.run(main())
