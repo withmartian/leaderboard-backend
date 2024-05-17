@@ -12,3 +12,4 @@ asyncio == 3.4.3
 APScheduler == 3.10.4
 httpx == 0.26.0
 h2 == 4.1.0
+redis == 5.0.4

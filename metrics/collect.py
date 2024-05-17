@@ -13,9 +13,17 @@ import time
 import asyncio
 from metrics.aggregate import aggregate_ttft, aggregate_throughputs
 import itertools
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 NUM_WARMUP_REQUESTS = 3
-CONCURRENT_REQUESTS = [50, 20, 2]
+if os.environ.get("CONCURRENT_REQUESTS", ""):
+    CONCURRENT_REQUESTS = [int(a) for a in os.environ["CONCURRENT_REQUESTS"].split(",")]
+else:
+    CONCURRENT_REQUESTS = [50, 20, 2]
+
 AVERAGE_OVER = 10
 COLLECTION_RETRIES = 2
 RERUN_THRESHOLD_DAYS = 0.3
@@ -129,6 +137,7 @@ async def get_ttft(
                 ttft=raw_ttfts,
             )
             await save_ttft(ttft)
+
             print(
                 f"Saved TTFT for provider = {provider_name}, model = {llm_name}, concurrent requests = {num_concurrent_requests}"
             )
@@ -152,7 +161,6 @@ async def provider_handler(provider_name: str, model_name: str):
         TokenCounts,
         CONCURRENT_REQUESTS,
     )
-
     # collect TTFT and Throughput for combinations that hasn't already been collected within a threshold
     for combo in ttft_combinations:
         provider_name, model, num_concurrent_requests = combo
@@ -163,11 +171,15 @@ async def provider_handler(provider_name: str, model_name: str):
         ) or await aggregate_ttft(
             provider_name, model, num_concurrent_requests, RERUN_THRESHOLD_DAYS
         ):
+            m = await aggregate_ttft(
+                provider_name, model, num_concurrent_requests, RERUN_THRESHOLD_DAYS
+            )
+            print(model, model in ProviderFactory.get_provider(provider_name).get_supported_models(), m)
             continue
         try:
             repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
             await get_ttft(*combo, num_repeats=repeats)
-        except:
+        except Exception as e:
             pass
     for combo in throughput_combinations:
         provider_name, model, output_tokens, num_concurrent_requests = combo
@@ -194,13 +206,16 @@ async def collect_metrics():
     Collect throughputs and TTFT for all providers.
     """
     provider_names = ProviderFactory.get_all_provider_names()
+    print("provider_names", provider_names)
     tasks = []
     for provider_name in provider_names:
         for model in ModelName:
             task = asyncio.create_task(provider_handler(provider_name, model))
             tasks.append(task)
-
+    print("tasks", tasks)
     await asyncio.gather(*tasks)
+
+    print("done tasks")
 
 
 async def collect_metrics_with_retries():
