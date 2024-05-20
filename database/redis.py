@@ -17,12 +17,16 @@ class RedisClient:
 
     @classmethod
     def save_metrics_key(cls, metrics_key, **kwargs):
-        """Save the keys to redis."""
+        """Save the metric key to each variation of:
+        provider, model, concurrent_requests, output_tokens
+        """
         for key, val in kwargs.items():
             cls.db.sadd(f'{key}:{val}', metrics_key)
 
     @classmethod
-    def save_ttft_metrics(cls, ttfts: list[float], provider_name: str, llm_name: ModelName, concurrent_requests: int) -> str:
+    def save_ttft_metrics(cls, ttfts: list[float], provider_name: str, llm_name: ModelName, concurrent_requests: int):
+        """Save the aggregate ttfts metric to redis."""
+
         metrics_key = f"ttft:{provider_name.lower()}:{llm_name.value}:{concurrent_requests}"
         metrics = {
             "p50": np.percentile(ttfts, 50),
@@ -38,7 +42,9 @@ class RedisClient:
         )
 
     @classmethod
-    def save_throughput_metrics(cls, throughputs: list[float], provider_name: str, llm_name: ModelName, concurrent_requests: int, output_tokens: TokenCounts) -> str:
+    def save_throughput_metrics(cls, throughputs: list[float], provider_name: str, llm_name: ModelName, concurrent_requests: int, output_tokens: TokenCounts):
+        """Save the aggregate ttfts metric to redis."""
+
         metrics_key = f"throughput:{provider_name.lower()}:{llm_name.value}:{concurrent_requests}:{output_tokens.value}"
         metrics = {
             "p50": np.percentile(throughputs, 50),
