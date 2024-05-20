@@ -171,10 +171,6 @@ async def provider_handler(provider_name: str, model_name: str):
         ) or await aggregate_ttft(
             provider_name, model, num_concurrent_requests, RERUN_THRESHOLD_DAYS
         ):
-            m = await aggregate_ttft(
-                provider_name, model, num_concurrent_requests, RERUN_THRESHOLD_DAYS
-            )
-            print(model, model in ProviderFactory.get_provider(provider_name).get_supported_models(), m)
             continue
         try:
             repeats = max(AVERAGE_OVER // num_concurrent_requests, 1)
@@ -206,16 +202,12 @@ async def collect_metrics():
     Collect throughputs and TTFT for all providers.
     """
     provider_names = ProviderFactory.get_all_provider_names()
-    print("provider_names", provider_names)
     tasks = []
     for provider_name in provider_names:
         for model in ModelName:
             task = asyncio.create_task(provider_handler(provider_name, model))
             tasks.append(task)
-    print("tasks", tasks)
     await asyncio.gather(*tasks)
-
-    print("done tasks")
 
 
 async def collect_metrics_with_retries():

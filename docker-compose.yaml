@@ -3,74 +3,35 @@ version: '3.8'
 services:
   server:
     ports:
-      - 8000:8000
-      - 5678:5678
+      - 8001:8000
+      - 5679:5678
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - .:/app
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
-    depends_on:
-      mongo:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     env_file:
       - .env
+    networks:
+      - leaderboard-network
+      - shared-network
 
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - .:/app
-  #   command: python worker.py
-  #   depends_on:
-  #     mongo:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   env_file:
-  #     - .env
-
-  mongo:
-    image: mongo:latest
-    command: --quiet --logpath /dev/null
-
-    ports:
-      - 27017:27017
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - type: volume
-        source: mongodb_data_volume
-        target: /data/db
-    healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-    logging:
-      driver: none
+      - .:/app
+    command: python worker.py
+    env_file:
+      - .env
+    networks:
+      - leaderboard-network
+      - shared-network
 
-  redis:
-    image: redis:alpine
-    ports:
-      - 6379:6379
-    volumes:
-      - type: volume
-        source: redis_data_volume
-        target: /data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    logging:
-      driver: none
-
-volumes:
-  mongodb_data_volume:
-    external: false
-  redis_data_volume:
+networks:
+  shared-network:
+    external: true
+  leaderboard-network:
     external: false
