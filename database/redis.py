@@ -16,12 +16,12 @@ class RedisClient:
     )
 
     @classmethod
-    def save_metrics_key(cls, metrics_key, **kwargs):
+    def save_metrics_key(cls, metric, metrics_key, **kwargs):
         """Save the metric key to each variation of:
         provider, model, concurrent_requests, output_tokens
         """
         for key, val in kwargs.items():
-            cls.db.sadd(f'{key}:{val}', metrics_key)
+            cls.db.sadd(f'{metric}:{key}:{val}', metrics_key)
 
     @classmethod
     def save_ttft_metrics(cls, ttfts: list[float], provider_name: str, llm_name: ModelName, concurrent_requests: int):
@@ -35,6 +35,7 @@ class RedisClient:
         cls.db.hmset(metrics_key, metrics)
 
         cls.save_metrics_key(
+            "ttft",
             metrics_key,
             provider=provider_name.lower(),
             model=llm_name.value,
@@ -53,6 +54,7 @@ class RedisClient:
         cls.db.hmset(metrics_key, metrics)
 
         cls.save_metrics_key(
+            "throughput",
             metrics_key,
             provider=provider_name.lower(),
             model=llm_name.value,
