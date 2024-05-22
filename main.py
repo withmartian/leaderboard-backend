@@ -34,7 +34,7 @@ async def shutdown_event():
     await DatabaseClient.disconnect()
 
 
-@app.get("/")
+@app.get("/api")
 def root():
     return {"message": "Provider Leaderboard is up and running!"}
 
@@ -51,7 +51,7 @@ def is_cache_expired(
     return datetime.now() - timestamp > expiry_duration
 
 
-@app.get("/get-provider-data")
+@app.get("/api/get-provider-data")
 async def get_provider_data(
     output_tokens: TokenCounts = Query(...),
     num_concurrent_request: int = Query(...),
