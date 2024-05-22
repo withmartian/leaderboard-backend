@@ -39,7 +39,6 @@ def root():
     return {"message": "Provider Leaderboard is up and running!"}
 
 
-
 def generate_cache_key(
     output_tokens, num_concurrent_request, selected_models, num_days
 ):
