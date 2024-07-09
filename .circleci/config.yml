@@ -1,1 +1,25 @@
 version: 2.1
+
+jobs:
+  build_and_push:
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t myorg/myapp:${CIRCLE_SHA1} -f Dockerfile .
+      - run:
+          name: Push to Docker Registry
+          command: |
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push myorg/myapp:${CIRCLE_SHA1}
+
+workflows:
+  version: 2
+  build_deploy:
+    jobs:
+      - build_and_push
+
