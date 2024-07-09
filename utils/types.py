@@ -4,6 +4,7 @@ from enum import Enum
 class ModelName(str, Enum):
     GPT4 = "gpt-4"
     GPT4_TURBO = "gpt-4-turbo"
+    GPT4O = "gpt-4o"
     GPT3_TURBO = "gpt-3.5-turbo"
     CLAUDE3_HAIKU = "claude-3-haiku"
     CLAUDE3_SONNET = "claude-3-sonnet"

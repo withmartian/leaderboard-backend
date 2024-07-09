@@ -9,6 +9,7 @@ static_data = [
         cost={
             "gpt-3.5-turbo": {"in": 0.5, "out": 1.5},
             "gpt-4-turbo": {"in": 10.0, "out": 30.0},
+            "gpt-4o": {"in": 5.0, "out": 15.0},
             "gpt-4": {"in": 30.0, "out": 60.0},
         },
         rate_limit="10K RPM",
@@ -86,7 +87,6 @@ static_data = [
         logo_url="https://provider-leaderboard.sfo3.cdn.digitaloceanspaces.com/Perplexity%20logo.svg",
         cost={
             "mixtral-8x7b": {"in": 0.6, "out": 0.6},
-            "mistral-7b-chat": {"in": 0.2, "out": 0.2},
             "llama-3-8b-chat": {"in": 0.2, "out": 0.2},
             "llama-3-70b-chat": {"in": 1.0, "out": 1.0},
         },
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     async def main():
         for data in static_data:
-            if data.provider_name in ["Groq"]:
+            if data.provider_name in ["OpenAI"]:
                 await update_static_data(data.provider_name, data)
 
     asyncio.run(main())
