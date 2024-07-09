@@ -21,7 +21,7 @@ class BaseProvider(ABC):
         adapter_str = (
             f"{self.get_provider_name().lower()}/{self.get_adapter_model_str(llm_name)}"
         )
-        adapter = AdapterFactory.get_adapter(adapter_str)
+        adapter = AdapterFactory.get_adapter_by_path(adapter_str)
         input = adapter.convert_to_input(Prompt(prompt))
         start = time.time()
         response = await adapter.execute_async(
@@ -33,7 +33,10 @@ class BaseProvider(ABC):
     async def call_streaming(
         self, llm_name: str, prompt: str, max_tokens: int
     ) -> float:
-        adapter = AdapterFactory.get_adapter(self.get_adapter_model_str(llm_name))
+        adapter_str = (
+            f"{self.get_provider_name().lower()}/{self.get_adapter_model_str(llm_name)}"
+        )
+        adapter = AdapterFactory.get_adapter_by_path(adapter_str)
         input = adapter.convert_to_input(Prompt(prompt))
         start = time.time()
         adapter_response = await adapter.execute_async(
