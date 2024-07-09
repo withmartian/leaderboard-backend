@@ -46,6 +46,16 @@ async def save_static_data(static_data: StaticData) -> None:
     await static_data_collection.insert_one(static_data.model_dump(by_alias=True))
 
 
+async def update_static_data(provider_name: str, static_data: StaticData) -> None:
+    static_data_collection = DatabaseClient.get_collection("static-data")
+    query = {
+        "provider_name": provider_name,
+    }
+    await static_data_collection.update_one(
+        query, {"$set": static_data.dict(by_alias=True)}
+    )
+
+
 async def get_static_data(provider_name: str) -> StaticData | None:
     static_data_collection = DatabaseClient.get_collection("static-data")
     query = {

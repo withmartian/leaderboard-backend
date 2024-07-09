@@ -11,7 +11,7 @@ class ProviderFactory:
         providers_classes = {}
         for _, obj in inspect.getmembers(sys.modules["providers.concrete_providers"]):
             if inspect.isclass(obj) and issubclass(obj, BaseProvider):
-                providers_classes[obj.NAME] = obj
+                providers_classes[obj.get_provider_name()] = obj
         return providers_classes
 
     _model_registry = _create_provider_classes()

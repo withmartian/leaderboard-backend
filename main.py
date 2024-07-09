@@ -130,20 +130,25 @@ async def get_provider_data(
         return query_cache[cache_key][0]
 
     model_names = []
-    if "llama2-70b-chat" in selected_models:
-        model_names.append(ModelName.LLAMA2_70B_CHAT.value)
-    if "mixtral-8x7b" in selected_models:
-        model_names.append(ModelName.MIXTRAL_8X7B.value)
-    if "OpenAI models" in selected_models:
-        model_names.extend(
-            [
-                ModelName.GPT4.value,
-                ModelName.GPT4_TURBO.value,
-                ModelName.GPT3_TURBO.value,
-            ]
-        )
-    if "Anthropic models" in selected_models:
-        model_names.extend([ModelName.CLAUDE2.value, ModelName.CLAUDE_INSTANT.value])
+    for model in selected_models:
+        if model == "OpenAI models":
+            model_names.extend(
+                [
+                    ModelName.GPT4.value,
+                    ModelName.GPT4_TURBO.value,
+                    ModelName.GPT3_TURBO.value,
+                ]
+            )
+        elif model == "Anthropic models":
+            model_names.extend(
+                [
+                    ModelName.CLAUDE3_HAIKU.value,
+                    ModelName.CLAUDE3_SONNET.value,
+                    ModelName.CLAUDE3_OPUS.value,
+                ]
+            )
+        elif model in ModelName.__members__.values():
+            model_names.append(model)
 
     tasks = [
         query_provider_model(provider_name, model)

@@ -1,15 +1,13 @@
-from providers.abstract_providers.openai_provider import OpenaiProvider
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from providers.abstract_providers.base_provider import BaseProvider
 
 
-class Anyscale(OpenaiProvider):
-    NAME = "Anyscale"
-    API_KEY = os.environ["ANYSCALE_API_KEY"]
-    OPENAI_BASE_URL = "https://api.endpoints.anyscale.com/v1"
-    SUPPORTED_MODELS = {
+class Anyscale(BaseProvider):
+    ADAPTER_MODEL_STR_MAP = {
+        "llama-3-8b-chat": "meta-llama/Llama-3-8b-chat-hf",
+        "llama-3-70b-chat": "meta-llama/Llama-3-70b-chat-hf",
         "mixtral-8x7b": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "llama2-70b-chat": "meta-llama/Llama-2-7b-chat-hf",
+        "mixtral-8x22b": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+        "mistral-7b-chat": "mistralai/Mistral-7B-Instruct-v0.1",
+        "gemma-7b-instruct": "google/gemma-7b-it",
     }
+    PROVIDER_NAME = "Anyscale"

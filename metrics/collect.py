@@ -28,8 +28,7 @@ async def validate_and_warmup(provider_name: str, llm_name: ModelName) -> bool:
         return False
 
     # send warmup request
-    warmup_request = 1 if provider_name == "Perplexity" else NUM_WARMUP_REQUESTS
-    for _ in range(warmup_request):
+    for _ in range(NUM_WARMUP_REQUESTS):
         try:
             await provider.call_sdk(llm_name=llm_name, prompt="Hi", max_tokens=5)
         except Exception as e:
