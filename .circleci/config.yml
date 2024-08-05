@@ -1,0 +1,96 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/configuration-reference
+version: 2.1
+
+# Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
+# See: https://circleci.com/docs/orb-intro/
+orbs:
+  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
+  python: circleci/python@1.5.0
+  node: circleci/node@5.1.0
+  gcp-cli: circleci/gcp-cli@3.1.1
+  helm: circleci/helm@3.0.1
+
+
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/configuration-reference/#jobs
+jobs:
+  build-docker-and-deploy:
+    parameters:
+      env-name:
+        type: string
+        default: ""
+      release-name:
+        type: string
+        default: ""
+    docker:
+      - image: cimg/python:3.11.5
+    steps:
+      - checkout
+      - gcp-cli/setup
+      - add_ssh_keys:
+          fingerprints:
+            - "cd:78:c1:25:78:07:fa:21:e8:c9:ed:2f:6f:80:79:8b"
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: "Build and push docker image"
+          command: |
+            gcloud auth configure-docker us-docker.pkg.dev
+            gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us-docker.pkg.dev
+            docker build -t $LEADERBOARD_DOCKER_REPO/$LEADERBOARD_BACKEND_IMAGE_NAME:latest .
+            docker tag $LEADERBOARD_DOCKER_REPO/$LEADERBOARD_BACKEND_IMAGE_NAME:latest "us-docker.pkg.dev/striking-center-377103/withmartian-docker/backend:${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+            docker push $LEADERBOARD_DOCKER_REPO/$LEADERBOARD_BACKEND_IMAGE_NAME:${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+      - run:
+          name: "Clone Infra & Setup Kube Config"
+          command: |
+            git clone $INFRA_PROJECT_GIT_URL ~/infra
+            cd ~/infra
+            rm ~/infra/helm/values.yaml
+            gcloud components install gke-gcloud-auth-plugin
+            gcloud container clusters get-credentials << parameters.env-name >>-cluster --project $LEADERBOARD_PROJECT --zone $LEADERBOARD_ZONE
+      - helm/install_helm_client:
+          version: v3.14.1
+      #- helm/upgrade_helm_chart:
+      #    release_name: << parameters.release-name >>
+      #    namespace: << parameters.env-name >>
+      #    chart: /home/circleci/infra/helm
+      #    atomic: true
+      #    values_to_override: backendDeployment.backendApp.image.tag=${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM},backendDeployment.backendApp.image.repository=$LEADERBOARD_DOCKER_REPO/$LEADERBOARD_BACKEND_IMAGE_NAME
+      #    reuse_values: true
+
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  deployment: # This is the name of the workflow, feel free to change it to better match your workflow.
+    # Inside the workflow, you define the jobs you want to run.
+    jobs:
+      - hold:
+          type: approval
+          requires:
+          - build-and-test
+          - pre-commit
+          filters:
+            branches:
+              only:
+                - main
+                - feature/val-fixes
+
+      - build-docker-and-deploy:
+          env-name: $ENV_NAME
+          release-name: $RELEASE_NAME
+          context:
+            - gcp_code_repository_access
+            - leaderboard_secrets
+          requires:
+          - hold
+          filters:
+            branches:
+              only:
+                - main
+                - feature/val-fixes
