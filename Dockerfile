@@ -1,6 +1,6 @@
 # Use an official lightweight Python image.
 # https://hub.docker.com/_/python
-FROM python:3.11.6-slim-bookworm
+FROM python:3.11-slim-bookworm
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,7 +8,9 @@ WORKDIR /app
 # Copy the dependencies file to the working directory
 COPY requirements.txt .
 
-RUN pip install setuptools --upgrade --ignore-installed
+#RUN pip install setuptools --upgrade --ignore-installed
+# Upgrade pip and setuptools
+RUN pip install --upgrade pip setuptools
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
