@@ -1,18 +1,7 @@
-# Using debian trixie
-FROM debian:trixie-slim
+# Use an official lightweight Python image.
+# https://hub.docker.com/_/python
+FROM python:3.11-slim-bookworm
 
-
-# Install only necessary packages
-RUN apt-get update && \
-    apt-get install -y python3.11 python3.11-venv python3-pip && \
-    ln -s /usr/bin/python3 /usr/bin/python
-
-WORKDIR /opt
-
-# Set up virtual environment
-RUN python3.11 -m venv venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --upgrade pip
 
 # Set the working directory in the container
 WORKDIR /app
@@ -20,6 +9,9 @@ WORKDIR /app
 # Copy the dependencies file to the working directory
 COPY requirements.txt .
 
+#RUN pip install setuptools --upgrade --ignore-installed
+# Upgrade pip and setuptools
+RUN pip install --upgrade pip setuptools
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
