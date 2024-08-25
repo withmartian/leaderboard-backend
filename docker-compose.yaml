@@ -1,0 +1,53 @@
+name: leaderboard-backend
+version: '3.8'
+services:
+  server:
+    ports:
+      - 8001:8000
+      - 5679:5678
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: python worker.py
+    env_file:
+      - .env
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:latest
+    command: --quiet --logpath /dev/null
+
+    ports:
+      - 27017:27017
+    volumes:
+      - type: volume
+        source: leaderboard_mongodb_data_volume
+        target: /data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: none
+
+volumes:
+  leaderboard_mongodb_data_volume:
+    external: false
